@@ -1,0 +1,66 @@
+"use client";
+
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { ClientResponseError } from "pocketbase";
+import { pb } from "@/lib/pocketbase";
+import { useAuth } from "@/lib/use-auth";
+import type { Business } from "@/lib/types";
+
+interface BusinessContextValue {
+  business: Business | null;
+  isLoading: boolean;
+  refresh: () => Promise<void>;
+  setBusiness: (b: Business) => void;
+}
+
+const BusinessContext = createContext<BusinessContextValue | null>(null);
+
+export function BusinessProvider({ children }: { children: ReactNode }) {
+  const { user, isLoading: authLoading } = useAuth();
+  const [business, setBusinessState] = useState<Business | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!user) {
+      setBusinessState(null);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const record = await pb
+        .collection("businesses")
+        .getFirstListItem<Business>(pb.filter("owner = {:id}", { id: user.id }), { requestKey: null });
+      setBusinessState(record);
+      setIsLoading(false);
+    } catch (err) {
+      // StrictMode'un dev'de effect'i iki kez çalıştırması SDK'nın bu isteği
+      // otomatik iptal etmesine yol açabilir — bu durumda "işletme yok"
+      // sanıp onboarding ekranını yanlışlıkla göstermeyelim.
+      const isCancelled = err instanceof ClientResponseError && err.isAbort;
+      if (!isCancelled) {
+        setBusinessState(null);
+        setIsLoading(false);
+      }
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    refresh();
+  }, [authLoading, refresh]);
+
+  return (
+    <BusinessContext.Provider
+      value={{ business, isLoading: authLoading || isLoading, refresh, setBusiness: setBusinessState }}
+    >
+      {children}
+    </BusinessContext.Provider>
+  );
+}
+
+export function useBusiness() {
+  const ctx = useContext(BusinessContext);
+  if (!ctx) throw new Error("useBusiness, BusinessProvider içinde kullanılmalı.");
+  return ctx;
+}

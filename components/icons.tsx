@@ -1,0 +1,392 @@
+import type { ReactNode, SVGProps } from "react";
+import type { Badge, Highlight } from "@/lib/types";
+
+// Tüm ikonlar çizgi (stroke) stilinde ve currentColor kullanır:
+// rengi bulunduğu yerin metin renginden alır, emoji gibi kendi rengini dayatmaz.
+type IconProps = SVGProps<SVGSVGElement> & { size?: number };
+
+function Svg({ size = 20, children, ...props }: IconProps & { children: ReactNode }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      {children}
+    </svg>
+  );
+}
+
+export function MenuIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="18" x2="20" y2="18" />
+    </Svg>
+  );
+}
+
+export function SearchIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="11" cy="11" r="7" />
+      <line x1="21" y1="21" x2="16.3" y2="16.3" />
+    </Svg>
+  );
+}
+
+export function MessageIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </Svg>
+  );
+}
+
+export function ArrowLeftIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </Svg>
+  );
+}
+
+export function InstagramIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="2.5" y="2.5" width="19" height="19" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <line x1="17.2" y1="6.8" x2="17.21" y2="6.8" strokeWidth={2.4} />
+    </Svg>
+  );
+}
+
+export function WhatsappIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
+      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
+    </Svg>
+  );
+}
+
+export function PhoneIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </Svg>
+  );
+}
+
+export function MapPinIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M20 10c0 5-6.6 10.8-7.4 11.5a1 1 0 0 1-1.2 0C10.6 20.8 4 15 4 10a8 8 0 0 1 16 0" />
+      <circle cx="12" cy="10" r="3" />
+    </Svg>
+  );
+}
+
+export function TiktokIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M21 7.917v4.034a9.948 9.948 0 0 1-5-1.951v4.5a6.5 6.5 0 1 1-8-6.326v4.326a2.5 2.5 0 1 0 4 2V3h4.083A6.005 6.005 0 0 0 21 7.917z" />
+    </Svg>
+  );
+}
+
+export function YoutubeIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
+      <path d="m10 15 5-3-5-3z" />
+    </Svg>
+  );
+}
+
+export function FacebookIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </Svg>
+  );
+}
+
+export function WifiIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M2 8.82a15 15 0 0 1 20 0" />
+      <path d="M5 12.86a10 10 0 0 1 14 0" />
+      <path d="M8.5 16.43a5 5 0 0 1 7 0" />
+      <line x1="12" y1="20" x2="12.01" y2="20" strokeWidth={2.4} />
+    </Svg>
+  );
+}
+
+export function ClockIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15.5 14" />
+    </Svg>
+  );
+}
+
+export function FlameIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 3c2.5 3 5 5.6 5 9a5 5 0 0 1-10 0c0-1.3.4-2.5 1-3.5.4 1.1 1.1 2 2 2.5C9.7 8.6 10.7 5.6 12 3z" />
+    </Svg>
+  );
+}
+
+export function StarIcon({ filled = false, ...p }: IconProps & { filled?: boolean }) {
+  return (
+    <Svg {...p} fill={filled ? "currentColor" : "none"}>
+      <polygon points="12 2.5 15.09 8.76 22 9.77 17 14.64 18.18 21.52 12 18.27 5.82 21.52 7 14.64 2 9.77 8.91 8.76" />
+    </Svg>
+  );
+}
+
+export function CheckCircleIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m8.5 12.5 2.5 2.5 5-5.5" />
+    </Svg>
+  );
+}
+
+function CarIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+      <circle cx="7" cy="17" r="2" />
+      <path d="M9 17h6" />
+      <circle cx="17" cy="17" r="2" />
+    </Svg>
+  );
+}
+
+function ParkingIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M9.5 17V7h4a3 3 0 0 1 0 6h-4" />
+    </Svg>
+  );
+}
+
+function ToyBrickIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="3" y="8" width="18" height="12" rx="1" />
+      <path d="M10 8V5c0-.6-.4-1-1-1H6a1 1 0 0 0-1 1v3" />
+      <path d="M19 8V5c0-.6-.4-1-1-1h-3a1 1 0 0 0-1 1v3" />
+    </Svg>
+  );
+}
+
+function PawIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="11" cy="4" r="2" />
+      <circle cx="18" cy="8" r="2" />
+      <circle cx="20" cy="16" r="2" />
+      <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.05Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" />
+    </Svg>
+  );
+}
+
+function SunIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </Svg>
+  );
+}
+
+function MusicIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </Svg>
+  );
+}
+
+function CalendarIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M3 10h18" />
+    </Svg>
+  );
+}
+
+function CreditCardIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+    </Svg>
+  );
+}
+
+function AccessibilityIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="4.5" r="1.5" />
+      <path d="M12 8v5" />
+      <path d="M6.5 9.5c3.5 1.5 7.5 1.5 11 0" />
+      <path d="m8.5 20 3.5-7 3.5 7" />
+    </Svg>
+  );
+}
+
+function CigaretteIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M17 12H3a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h14" />
+      <path d="M21 16a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+      <path d="M18 8c0-2.5-2-2.5-2-5" />
+      <path d="M22 8c0-2.5-2-2.5-2-5" />
+      <path d="M7 12v4" />
+    </Svg>
+  );
+}
+
+function FriedEggIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="11" cy="11" r="3" />
+    </Svg>
+  );
+}
+
+function SparklesIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" />
+      <path d="M19 15l.9 2.4L22 18.3l-2.1.9L19 21.5l-.9-2.3-2.1-.9 2.1-.9z" />
+    </Svg>
+  );
+}
+
+function ChefHatIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.46.32-.84.73-1.04a4 4 0 0 0-2.14-7.59 5 5 0 0 0-9.18 0 4 4 0 0 0-2.14 7.59c.41.2.73.58.73 1.04V20a1 1 0 0 0 1 1Z" />
+      <path d="M6 17h12" />
+    </Svg>
+  );
+}
+
+function TrendingUpIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </Svg>
+  );
+}
+
+function LeafIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+    </Svg>
+  );
+}
+
+function SproutIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M7 20h10" />
+      <path d="M10 20c5.5-2.5.8-6.4 3-10" />
+      <path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z" />
+      <path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z" />
+    </Svg>
+  );
+}
+
+function PepperIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M15 8c0 6.5-5 11-11 11 1.5 1.5 4.5 2 7 1 5.5-2.2 8-7 8-12" />
+      <path d="M15 8c0-2 1.5-3.5 3.5-3.5" />
+      <path d="M15 8c0-2-1-3.5-3-4" />
+    </Svg>
+  );
+}
+
+function WheatOffIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M12 22v-9" />
+      <path d="M12 13c0-2.5 2-4.5 4.5-4.5 0 2.5-2 4.5-4.5 4.5z" />
+      <path d="M12 13c0-2.5-2-4.5-4.5-4.5 0 2.5 2 4.5 4.5 4.5z" />
+      <path d="M12 8c0-2.5 2-4.5 4.5-4.5 0 2.5-2 4.5-4.5 4.5z" />
+      <path d="M12 8c0-2.5-2-4.5-4.5-4.5 0 2.5 2 4.5 4.5 4.5z" />
+      <line x1="4" y1="20" x2="20" y2="4" />
+    </Svg>
+  );
+}
+
+// Rozet ve özellik ikonları — labels.ts'teki emoji haritalarının yerini alır.
+const badgeIconMap: Record<Badge, (p: IconProps) => ReactNode> = {
+  yeni: SparklesIcon,
+  sefin_onerisi: ChefHatIcon,
+  populer: TrendingUpIcon,
+  vejetaryen: LeafIcon,
+  vegan: SproutIcon,
+  aci: PepperIcon,
+  glutensiz: WheatOffIcon,
+};
+
+const highlightIconMap: Record<Highlight, (p: IconProps) => ReactNode> = {
+  wifi: WifiIcon,
+  vale: CarIcon,
+  otopark: ParkingIcon,
+  cocuk_oyun_alani: ToyBrickIcon,
+  evcil_hayvan_dostu: PawIcon,
+  teras: SunIcon,
+  canli_muzik: MusicIcon,
+  rezervasyon: CalendarIcon,
+  kredi_karti: CreditCardIcon,
+  engelli_erisimi: AccessibilityIcon,
+  sigara_alani: CigaretteIcon,
+  kahvalti: FriedEggIcon,
+};
+
+export function BadgeIcon({ badge, ...p }: IconProps & { badge: Badge }) {
+  const Icon = badgeIconMap[badge];
+  return <Icon {...p} />;
+}
+
+export function HighlightIcon({ highlight, ...p }: IconProps & { highlight: Highlight }) {
+  const Icon = highlightIconMap[highlight];
+  return <Icon {...p} />;
+}

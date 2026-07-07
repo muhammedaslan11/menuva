@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* ─── menuva tasarım token'ları ───────────────────────────
+   paper    : sıcak kâğıt zemini (menü kartı hissi)
+   ink      : espresso kahvesi mürekkep (saf siyah değil)
+   paprika  : marka turuncusu — domates/paprika tonu
+   herb     : fıstık/ot yeşili — "açık", "taze", onay durumları
+   crema    : kart zeminleri için açık krema
+──────────────────────────────────────────────────────────── */
+@theme {
+  --color-paper: #fbf5ea;
+  --color-crema: #f4ead9;
+  --color-ink: #231812;
+  --color-ink-soft: #5c4a3d;
+  --color-paprika: #e8491f;
+  --color-paprika-deep: #c23814;
+  --color-herb: #3e7c4f;
+  --color-line: #e0d3bf;
+
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Tailwind v4 butonları cursor:default yapıyor; tüm tıklanabilir öğeler pointer göstersin.
+   (Linkler tarayıcı varsayılanıyla zaten pointer.) */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  summary,
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  label:has(input[type="checkbox"]:not(:disabled)),
+  label:has(input[type="radio"]:not(:disabled)),
+  label:has(input[type="file"]:not(:disabled)) {
+    cursor: pointer;
+  }
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Menü satırı: "Ürün adı ........... fiyat" nokta-çizgi dolgusu */
+.dot-leader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+.dot-leader::before {
+  content: "";
+}
+.dot-leader .dots {
+  flex: 1;
+  border-bottom: 2px dotted var(--color-line);
+  transform: translateY(-0.35em);
+  min-width: 2rem;
+}
+
+/* Sayfa açılış animasyonu — tek, orkestre edilmiş an */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: rise-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.rise-1 { animation-delay: 0.05s; }
+.rise-2 { animation-delay: 0.15s; }
+.rise-3 { animation-delay: 0.25s; }
+.rise-4 { animation-delay: 0.4s; }
+
+/* Telefon mockup içindeki menünün hafif kayma animasyonu */
+@keyframes menu-drift {
+  0%, 18% { transform: translateY(0); }
+  45%, 70% { transform: translateY(-104px); }
+  95%, 100% { transform: translateY(0); }
+}
+.menu-drift {
+  animation: menu-drift 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .menu-drift {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+::selection {
+  background: var(--color-paprika);
+  color: var(--color-paper);
+}

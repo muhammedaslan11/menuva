@@ -1,0 +1,96 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { pb } from "@/lib/pocketbase";
+import { useBusiness } from "@/components/panel/business-context";
+import { Button, Card, EmptyState, PageHeader } from "@/components/panel/ui";
+import type { Popup } from "@/lib/types";
+
+export default function AnnouncementsPage() {
+  const { business, isLoading: businessLoading } = useBusiness();
+  const [popups, setPopups] = useState<Popup[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!business) return;
+    load();
+  }, [business]);
+
+  async function load() {
+    if (!business) return;
+    setLoading(true);
+    const list = await pb.collection("popups").getFullList<Popup>({
+      filter: pb.filter("business = {:id}", { id: business.id }),
+      sort: "-created",
+    });
+    setPopups(list);
+    setLoading(false);
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Bu duyuruyu silmek istediğine emin misin?")) return;
+    await pb.collection("popups").delete(id);
+    await load();
+  }
+
+  if (businessLoading || loading) {
+    return <p className="text-ink-soft">Yükleniyor…</p>;
+  }
+
+  return (
+    <div>
+      <PageHeader
+        title="Duyurular"
+        description="Müşteri menüyü açtığında gösterilecek kampanya ya da duyuru."
+        action={
+          <Link href="/panel/popups/new">
+            <Button>+ Yeni duyuru</Button>
+          </Link>
+        }
+      />
+
+      {popups.length === 0 && (
+        <EmptyState
+          title="Henüz duyuru yok"
+          description="Menü açıldığında gösterilecek bir kampanya duyurusu oluştur."
+          action={
+            <Link href="/panel/popups/new">
+              <Button>+ Yeni duyuru</Button>
+            </Link>
+          }
+        />
+      )}
+
+      <div className="space-y-3">
+        {popups.map((p) => (
+          <Card key={p.id} className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {p.image_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={p.image_url} alt="" className="h-12 w-12 rounded-xl object-cover" />
+              )}
+              <div>
+                <p className="font-display font-bold">
+                  {p.title}{" "}
+                  {!p.is_active && (
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">(pasif)</span>
+                  )}
+                </p>
+                {p.message && <p className="text-sm text-ink-soft">{p.message}</p>}
+              </div>
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <Link href={`/panel/popup/${p.id}`}>
+                <Button variant="outline">Düzenle</Button>
+              </Link>
+              <Button variant="danger" onClick={() => handleDelete(p.id)}>
+                Sil
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
