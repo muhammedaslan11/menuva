@@ -7,6 +7,7 @@ import { useBusiness } from "@/components/panel/business-context";
 import { uploadFile } from "@/lib/upload";
 import { isReservedSlug, slugify } from "@/lib/slug";
 import { themes } from "@/lib/themes";
+import { fonts, DEFAULT_FONT, getFontStack } from "@/lib/fonts";
 import { ROOT_DOMAIN } from "@/lib/site";
 import { highlightLabels } from "@/lib/labels";
 import { HighlightIcon } from "@/components/icons";
@@ -50,7 +51,7 @@ function ImagePicker({
   return (
     <div>
       <Label>{label}</Label>
-      <div className={`relative overflow-hidden rounded-xl border border-dashed border-line bg-crema/30 ${aspect}`}>
+      <div className={`relative overflow-hidden rounded-lg border border-dashed border-line bg-crema/30 ${aspect}`}>
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={value} alt={label} className="h-full w-full object-cover" />
@@ -100,6 +101,7 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
   const [googleReviewUrl, setGoogleReviewUrl] = useState(business.google_review_url);
   const [wifiPassword, setWifiPassword] = useState(business.wifi_password);
   const [theme, setTheme] = useState(business.theme || "paprika");
+  const [font, setFont] = useState(business.font || DEFAULT_FONT);
   const [template, setTemplate] = useState<Template>(business.template || "liste");
   const [logoUrl, setLogoUrl] = useState(business.logo_url);
   const [coverUrl, setCoverUrl] = useState(business.cover_url);
@@ -143,6 +145,7 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
         google_review_url: googleReviewUrl,
         wifi_password: wifiPassword,
         theme,
+        font,
         template,
         logo_url: logoUrl,
         cover_url: coverUrl,
@@ -182,7 +185,7 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
           </div>
           <div>
             <Label htmlFor="b-slug">Menü adresi</Label>
-            <div className="flex items-center gap-1 rounded-xl border border-line bg-crema/40 px-4 py-2.5 text-sm">
+            <div className="flex items-center gap-1 rounded-lg border border-line bg-crema/40 px-4 py-2.5 text-sm">
               <input
                 id="b-slug"
                 required
@@ -247,7 +250,7 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
                   </option>
                 ))}
               </Select>
-              <div className="mt-3 flex items-center gap-3 rounded-xl border border-line p-3">
+              <div className="mt-3 flex items-center gap-3 rounded-lg border border-line p-3">
                 <div
                   className="h-8 w-8 rounded-full border-2 border-white shadow-md"
                   style={{ backgroundColor: themes[theme as keyof typeof themes]?.color || themes.paprika.color }}
@@ -263,6 +266,20 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
                 <option value="liste">Liste</option>
                 <option value="grid">Grid / Kart</option>
               </Select>
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <Label htmlFor="b-font">Yazı tipi</Label>
+              <Select id="b-font" value={font} onChange={(e) => setFont(e.target.value)}>
+                {Object.entries(fonts).map(([key, { name }]) => (
+                  <option key={key} value={key}>
+                    {name}
+                  </option>
+                ))}
+              </Select>
+              <div className="mt-3 rounded-lg border border-line p-3" style={{ fontFamily: getFontStack(font) }}>
+                <p className="text-base font-bold">Izgara Köfte — 285₺</p>
+                <p className="text-sm text-ink-soft">Menünüz bu yazı tipiyle görünür.</p>
+              </div>
             </div>
           </div>
         </Card>

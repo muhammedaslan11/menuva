@@ -1,52 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { pb } from "@/lib/pocketbase";
 import { useMenu } from "@/components/menu/menu-provider";
-import type { Category, Product } from "@/lib/types";
+import { CategoryTabs } from "@/components/menu/category-tabs";
+import { ArrowLeftIcon } from "@/components/icons";
 
 export default function MenuCategoriesPage() {
-  const { business, base, t, tf } = useMenu();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { base, categories, categoriesLoading, imageByCategory, productCountByCategory, t, tf } = useMenu();
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([
-      pb.collection("categories").getFullList<Category>({
-        filter: pb.filter("business = {:id} && is_active = true", { id: business.id }),
-        requestKey: null,
-        sort: "order,created",
-      }),
-      pb.collection("products").getFullList<Product>({
-        filter: pb.filter("business = {:id} && is_available = true", { id: business.id }),
-        requestKey: null,
-        sort: "order,created",
-      }),
-    ]).then(([cats, prods]) => {
-      if (cancelled) return;
-      setCategories(cats);
-      setProducts(prods);
-      setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [business.id]);
-
-  // Kategori kartının görseli: o kategorideki ilk görselli ürünün fotoğrafı.
-  const imageByCategory = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const p of products) {
-      if (!map.has(p.category) && p.images?.[0]) map.set(p.category, p.images[0]);
-    }
-    return map;
-  }, [products]);
-
-  if (loading) {
+  if (categoriesLoading) {
     return <p className="py-20 text-center text-ink-soft">{t("loading")}</p>;
   }
 
@@ -55,41 +17,55 @@ export default function MenuCategoriesPage() {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 p-4">
-      {categories.map((cat) => {
-        const image = imageByCategory.get(cat.id);
-        const name = tf(cat, "name");
-        return (
-          <Link
-            key={cat.id}
-            href={`${base}/categories/${cat.id}`}
-            className="group relative aspect-square overflow-hidden rounded-2xl border border-line"
-          >
-            {image ? (
-              <>
-                <Image
-                  src={image}
-                  alt={name}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 300px"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent pt-10" />
-                <span className="absolute inset-x-0 bottom-0 p-3 font-display text-lg font-bold leading-tight text-paper">
-                  {name}
+    <div>
+      <CategoryTabs />
+      <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
+        {categories.map((cat) => {
+          const image = imageByCategory.get(cat.id);
+          const count = productCountByCategory.get(cat.id) ?? 0;
+          const name = tf(cat, "name");
+          return (
+            <Link
+              key={cat.id}
+              href={`${base}/categories/${cat.id}`}
+              data-reveal
+              className="group flex flex-col overflow-hidden rounded-xl border border-line bg-paper transition-colors hover:border-[var(--brand)]"
+            >
+              <div className="relative aspect-square w-full overflow-hidden bg-crema">
+                {image ? (
+                  <picture>
+                    <img
+                      src={image}
+                      alt=""
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </picture>
+                ) : (
+                  <span
+                    className="flex h-full w-full items-center justify-center font-display text-2xl font-extrabold"
+                    style={{ color: "var(--brand-text)" }}
+                  >
+                    {name.charAt(0)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-2 p-3">
+                <div className="min-w-0">
+                  <p className="truncate font-display text-base font-bold leading-tight">{name}</p>
+                  <p className="mt-0.5 font-mono text-[11px] text-ink-soft">{t("productCount", { count })}</p>
+                </div>
+                <span
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-crema"
+                  style={{ color: "var(--brand-text)" }}
+                >
+                  <ArrowLeftIcon size={14} className="rotate-180" />
                 </span>
-              </>
-            ) : (
-              <span
-                className="flex h-full w-full items-center justify-center p-3 text-center font-display text-lg font-bold leading-tight"
-                style={{ background: "color-mix(in srgb, var(--brand) 12%, transparent)", color: "var(--brand-text)" }}
-              >
-                {name}
-              </span>
-            )}
-          </Link>
-        );
-      })}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

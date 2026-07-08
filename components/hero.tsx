@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { ClockIcon, FlameIcon } from "@/components/icons";
+import { whatsappLink } from "@/lib/site";
 
 const demoItems = [
   {
@@ -78,7 +78,7 @@ function PhoneMock() {
         {/* ürün listesi — hafifçe kayarak canlı olduğunu hissettirir */}
         <div className="menu-drift space-y-2 px-4">
           {demoItems.map((item) => (
-            <div key={item.name} className="rounded-xl bg-paper/[0.06] p-3">
+            <div key={item.name} className="rounded-lg bg-paper/[0.06] p-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   {item.badge && (
@@ -110,7 +110,7 @@ function PhoneMock() {
         </div>
 
         {/* sepet çubuğu */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-2xl bg-paprika px-4 py-3">
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-xl bg-paprika px-4 py-3">
           <span className="font-mono text-[10px] uppercase tracking-wider text-paper">
             Sepet · 2 ürün
           </span>
@@ -154,18 +154,17 @@ export function Hero() {
         </p>
         <div className="rise rise-4 mt-9 flex flex-wrap items-center gap-6">
           <a
-            href="#fiyat"
+            href={whatsappLink("Merhaba, menuva hakkında bilgi almak istiyorum.")}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-full bg-paprika px-8 py-4 font-mono text-sm uppercase tracking-wider text-paper transition-colors hover:bg-paprika-deep"
           >
-            Ücretsiz başla
+            Hemen başla
           </a>
-          <div className="flex items-center gap-3 rounded-2xl border border-line bg-crema/60 p-3">
-            <Image
-              src="/demo-qr.svg"
-              alt="Demo menü QR kodu"
-              width={64}
-              height={64}
-            />
+          <div className="flex items-center gap-3 rounded-xl border border-line bg-crema/60 p-3">
+            <picture>
+              <img src="/demo-qr.svg" alt="Demo menü QR kodu" width={64} height={64} />
+            </picture>
             <p className="max-w-[130px] font-mono text-[11px] leading-snug text-ink-soft">
               Telefonunla tara, demo menüyü canlı gör
             </p>

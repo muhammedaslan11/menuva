@@ -8,15 +8,24 @@ import { useAuth } from "@/lib/use-auth";
 import { pb } from "@/lib/pocketbase";
 import { BusinessProvider, useBusiness } from "@/components/panel/business-context";
 import { menuUrl } from "@/lib/site";
+import {
+  FolderIcon,
+  LayoutIcon,
+  MegaphoneIcon,
+  PackageIcon,
+  QrCodeIcon,
+  SettingsIcon,
+  StarIcon,
+} from "@/components/icons";
 
 const navItems = [
-  { href: "/panel", label: "Genel bakış", prefixes: ["/panel"] },
-  { href: "/panel/categories", label: "Kategoriler", prefixes: ["/panel/categories", "/panel/category/"] },
-  { href: "/panel/products", label: "Ürünler", prefixes: ["/panel/products", "/panel/product/"] },
-  { href: "/panel/popups", label: "Duyurular", prefixes: ["/panel/popups", "/panel/popup/"] },
-  { href: "/panel/reviews", label: "Değerlendirmeler", prefixes: ["/panel/reviews"] },
-  { href: "/panel/qr", label: "QR & paylaş", prefixes: ["/panel/qr"] },
-  { href: "/panel/settings", label: "Ayarlar", prefixes: ["/panel/settings"] },
+  { href: "/panel", label: "Genel bakış", Icon: LayoutIcon, prefixes: ["/panel"] },
+  { href: "/panel/categories", label: "Kategoriler", Icon: FolderIcon, prefixes: ["/panel/categories", "/panel/category/"] },
+  { href: "/panel/products", label: "Ürünler", Icon: PackageIcon, prefixes: ["/panel/products", "/panel/product/"] },
+  { href: "/panel/popups", label: "Kampanyalar", Icon: MegaphoneIcon, prefixes: ["/panel/popups", "/panel/popup/"] },
+  { href: "/panel/reviews", label: "Değerlendirmeler", Icon: StarIcon, prefixes: ["/panel/reviews"] },
+  { href: "/panel/qr", label: "QR & paylaş", Icon: QrCodeIcon, prefixes: ["/panel/qr"] },
+  { href: "/panel/settings", label: "Ayarlar", Icon: SettingsIcon, prefixes: ["/panel/settings"] },
 ];
 
 function isNavItemActive(pathname: string, item: (typeof navItems)[number]) {
@@ -45,21 +54,6 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           <Link href="/panel">
             <Logo />
           </Link>
-          {business && (
-            <nav className="hidden items-center gap-6 font-mono text-[12px] uppercase tracking-wider text-ink-soft md:flex">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`transition-colors hover:text-paprika ${
-                    isNavItemActive(pathname, item) ? "text-paprika" : ""
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          )}
           <div className="flex items-center gap-4">
             {business && (
               <a
@@ -79,6 +73,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         </div>
+        {/* Mobil: yatay kaydırılabilir kompakt menü (sidebar masaüstünde) */}
         {business && (
           <div className="border-t border-line/60 md:hidden">
             <nav className="mx-auto flex max-w-6xl gap-4 overflow-x-auto px-5 py-2.5 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
@@ -86,9 +81,8 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`whitespace-nowrap transition-colors hover:text-paprika ${
-                    isNavItemActive(pathname, item) ? "text-paprika" : ""
-                  }`}
+                  className={`whitespace-nowrap transition-colors hover:text-paprika ${isNavItemActive(pathname, item) ? "text-paprika" : ""
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -97,7 +91,32 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
       </header>
-      <main className="mx-auto max-w-6xl px-5 py-10">{children}</main>
+      <div className="mx-auto flex max-w-6xl gap-8 px-5">
+        {/* Masaüstü: sol sidebar */}
+        {business && (
+          <aside className="sticky top-[65px] hidden h-[calc(100vh-65px)] w-52 shrink-0 overflow-y-auto py-8 md:block">
+            <nav className="space-y-1">
+              {navItems.map((item) => {
+                const active = isNavItemActive(pathname, item);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors ${active
+                        ? "bg-paprika/10 font-semibold text-paprika"
+                        : "text-ink-soft hover:bg-crema/70 hover:text-ink"
+                      }`}
+                  >
+                    <item.Icon size={17} strokeWidth={active ? 2.1 : 1.8} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
+        )}
+        <main className="min-w-0 flex-1 py-10">{children}</main>
+      </div>
     </div>
   );
 }

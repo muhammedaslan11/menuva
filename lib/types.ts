@@ -50,6 +50,8 @@ export interface Business {
   logo_url: string;
   cover_url: string;
   theme: string;
+  /** lib/fonts.ts'teki FontKey — PB şemasına "font" (text) alanı eklenene kadar boş gelir. */
+  font?: string;
   template: Template;
   phone: string;
   address: string;

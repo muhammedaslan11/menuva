@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { pb } from "@/lib/pocketbase";
 import { useMenu } from "@/components/menu/menu-provider";
@@ -65,7 +64,9 @@ export default function ProductDetailPage() {
     <div className="pb-10">
       {image && (
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-crema sm:aspect-[2/1]">
-          <Image src={image} alt={name} fill priority sizes="(max-width: 768px) 100vw, 768px" className="object-cover" />
+          <picture>
+            <img src={image} alt={name} loading="eager" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
+          </picture>
         </div>
       )}
 
@@ -135,7 +136,7 @@ export default function ProductDetailPage() {
         {optionGroups.size > 0 && (
           <div className="space-y-3">
             {Array.from(optionGroups.entries()).map(([groupName, groupOptions]) => (
-              <div key={groupName} className="rounded-2xl border border-line p-4">
+              <div key={groupName} className="rounded-xl border border-line p-4">
                 <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">{groupName}</p>
                 <div className="mt-2 space-y-1.5">
                   {groupOptions.map((opt) => (
@@ -155,7 +156,7 @@ export default function ProductDetailPage() {
 
         <button
           onClick={() => addProduct(product)}
-          className="w-full rounded-2xl py-4 font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90"
+          className="w-full rounded-xl py-4 font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90"
           style={{ background: "var(--brand)", color: "var(--brand-on)" }}
         >
           + {t("addToCart")} · {formatPrice(finalPrice)}

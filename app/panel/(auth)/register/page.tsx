@@ -46,7 +46,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-paper p-8">
+    <div className="rounded-xl border border-line bg-paper p-8">
       <h1 className="font-display text-xl font-bold">Ücretsiz hesap aç</h1>
       <p className="mt-1 text-sm text-ink-soft">Kredi kartı gerekmez, 5 dakikada kurulur.</p>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">

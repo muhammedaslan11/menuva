@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import type { Popup } from "@/lib/types";
 import { useMenu } from "@/components/menu/menu-provider";
 
@@ -9,12 +8,14 @@ export function PopupModal({ popup, onClose }: { popup: Popup; onClose: () => vo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-5" onClick={onClose}>
       <div
-        className="w-full max-w-sm overflow-hidden rounded-3xl bg-paper shadow-2xl"
+        className="w-full max-w-sm overflow-hidden rounded-2xl bg-paper shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {popup.image_url && (
           <div className="relative h-40 w-full">
-            <Image src={popup.image_url} alt="" fill className="object-cover" />
+            <picture>
+              <img src={popup.image_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+            </picture>
           </div>
         )}
         <div className="p-6 text-center">

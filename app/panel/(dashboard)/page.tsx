@@ -73,7 +73,7 @@ function Onboarding() {
           </div>
           <div>
             <Label htmlFor="slug">Menü adresi</Label>
-            <div className="flex items-center gap-1 rounded-xl border border-line bg-crema/40 px-4 py-2.5 text-sm">
+            <div className="flex items-center gap-1 rounded-lg border border-line bg-crema/40 px-4 py-2.5 text-sm">
               <input
                 id="slug"
                 required

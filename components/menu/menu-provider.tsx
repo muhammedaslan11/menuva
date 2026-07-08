@@ -1,12 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import Image from "next/image";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { pb } from "@/lib/pocketbase";
 import { pickReadableOn, readableAccent, visibleFill } from "@/lib/color";
 import { getThemeColor } from "@/lib/themes";
+import { getFontStack } from "@/lib/fonts";
 import { lineKey, loadCart, saveCart, unitPriceFor, type CartLine, type CartSelection } from "@/lib/cart";
 import {
   getStoredLocale,
@@ -22,10 +22,11 @@ import {
   type TranslatableField,
   type UIKey,
 } from "@/lib/i18n";
-import type { Business, MenuEventType, Popup, Product, ProductOption } from "@/lib/types";
+import type { Business, Category, MenuEventType, Popup, Product, ProductOption } from "@/lib/types";
 import { OptionPicker } from "@/components/menu/option-picker";
 import { CartBar, CartDrawer } from "@/components/menu/cart";
 import { PopupModal } from "@/components/menu/popup-modal";
+import { CategoryDrawer } from "@/components/menu/category-drawer";
 import { ArrowLeftIcon, MenuIcon, MessageIcon, SearchIcon } from "@/components/icons";
 
 interface MenuContextValue {
@@ -39,6 +40,11 @@ interface MenuContextValue {
   setLocale: (locale: Locale) => void;
   t: (key: UIKey, vars?: Record<string, string | number>) => string;
   tf: (entity: Translatable, field: TranslatableField) => string;
+  categories: Category[];
+  products: Product[];
+  categoriesLoading: boolean;
+  imageByCategory: Map<string, string>;
+  productCountByCategory: Map<string, number>;
 }
 
 const MenuContext = createContext<MenuContextValue | null>(null);
@@ -94,13 +100,19 @@ function isPopupInWindow(popup: Popup) {
   return true;
 }
 
-function MenuHeader({ business, base }: { business: Business; base: string }) {
+function MenuHeader({
+  business,
+  base,
+  onOpenDrawer,
+}: {
+  business: Business;
+  base: string;
+  onOpenDrawer: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { locale, t, tf } = useMenu();
-  const onWelcome = pathname === `${base}/welcome` || pathname === (base || "/");
-
-  if (onWelcome) return null;
+  const isProductPage = pathname.startsWith(`${base}/products/`);
 
   function goBack() {
     if (window.history.length > 1) router.back();
@@ -108,24 +120,42 @@ function MenuHeader({ business, base }: { business: Business; base: string }) {
   }
 
   return (
-    <header className="relative flex items-center justify-center border-b border-line bg-paper py-3">
-      <button
-        onClick={goBack}
-        aria-label={t("back")}
-        className="absolute start-4 flex h-10 w-10 items-center justify-center rounded-full"
-        style={{ background: "var(--brand)", color: "var(--brand-on)" }}
-      >
-        <ArrowLeftIcon size={20} className={isRTLLocale(locale) ? "rotate-180" : undefined} />
-      </button>
-      <Link href={`${base}/welcome`} aria-label={tf(business, "name")}>
-        {business.logo_url ? (
-          <span className="relative block h-12 w-12 overflow-hidden rounded-xl border border-line bg-paper">
-            <Image src={business.logo_url} alt={tf(business, "name")} fill className="object-cover" />
-          </span>
+    <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
+      <div className="relative mx-auto flex h-[var(--header-h)] max-w-3xl items-center justify-between gap-3 px-4">
+        {isProductPage ? (
+          <button
+            onClick={goBack}
+            aria-label={t("back")}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+            style={{ background: "var(--brand)", color: "var(--brand-on)" }}
+          >
+            <ArrowLeftIcon size={20} className={isRTLLocale(locale) ? "rotate-180" : undefined} />
+          </button>
         ) : (
-          <span className="font-display text-lg font-bold">{tf(business, "name")}</span>
+          <button
+            onClick={onOpenDrawer}
+            aria-label={t("categoriesLabel")}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-crema"
+          >
+            <MenuIcon size={22} />
+          </button>
         )}
-      </Link>
+
+        <Link href={`${base}/welcome`} className="flex min-w-0 flex-1 flex-col items-center gap-1 text-center">
+          {business.logo_url ? (
+            <span className="relative block h-9 w-9 overflow-hidden rounded-md border border-line bg-paper">
+              <picture>
+                <img src={business.logo_url} alt="" loading="eager" className="absolute inset-0 h-full w-full object-cover" />
+              </picture>
+            </span>
+          ) : null}
+          <span className="max-w-full truncate font-display text-sm font-bold leading-tight">
+            {tf(business, "name")}
+          </span>
+        </Link>
+
+        <LanguageSwitcher />
+      </div>
     </header>
   );
 }
@@ -172,17 +202,17 @@ function LanguageSwitcher() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed top-4 end-4 z-50">
-      {open && <div className="fixed inset-0" onClick={() => setOpen(false)} />}
+    <div className="relative z-50 shrink-0">
+      {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={t("chooseLanguage")}
-        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper font-mono text-[12px] font-bold uppercase tracking-wider text-ink shadow-sm"
+        className="relative z-50 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper font-mono text-[12px] font-bold uppercase tracking-wider text-ink shadow-sm"
       >
         {localeCodes[locale]}
       </button>
       {open && (
-        <div className="absolute end-0 top-12 min-w-[10rem] overflow-hidden rounded-2xl border border-line bg-paper shadow-lg">
+        <div className="absolute end-0 top-12 z-50 min-w-[10rem] overflow-hidden rounded-xl border border-line bg-paper shadow-lg">
           {SUPPORTED_LOCALES.map((l) => (
             <button
               key={l}
@@ -220,10 +250,57 @@ export function MenuProvider({
   const [pickerOptions, setPickerOptions] = useState<ProductOption[]>([]);
   const [popupDismissed, setPopupDismissed] = useState(true);
   const [locale, setLocaleState] = useState<Locale>("tr");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     setCart(loadCart(business.slug));
   }, [business.slug]);
+
+  // Kategori/ürün verisi tek yerden çekilir; drawer, üst sekmeler ve
+  // /menu, /categories/[id] sayfaları aynı veriyi paylaşır.
+  useEffect(() => {
+    let cancelled = false;
+    setCategoriesLoading(true);
+    Promise.all([
+      pb.collection("categories").getFullList<Category>({
+        filter: pb.filter("business = {:id} && is_active = true", { id: business.id }),
+        requestKey: null,
+        sort: "order,created",
+      }),
+      pb.collection("products").getFullList<Product>({
+        filter: pb.filter("business = {:id} && is_available = true", { id: business.id }),
+        requestKey: null,
+        sort: "order,created",
+      }),
+    ]).then(([cats, prods]) => {
+      if (cancelled) return;
+      setCategories(cats);
+      setProducts(prods);
+      setCategoriesLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [business.id]);
+
+  const imageByCategory = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of products) {
+      if (!map.has(p.category) && p.images?.[0]) map.set(p.category, p.images[0]);
+    }
+    return map;
+  }, [products]);
+
+  const productCountByCategory = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of products) {
+      map.set(p.category, (map.get(p.category) ?? 0) + 1);
+    }
+    return map;
+  }, [products]);
 
   useEffect(() => {
     setLocaleState(getStoredLocale());
@@ -301,14 +378,38 @@ export function MenuProvider({
 
   const brand = getThemeColor(business.theme);
   const brandFill = visibleFill(brand);
+  // İşletmenin seçtiği font hem gövde hem başlık ailesini değiştirir
+  // (font-display/font-body utility'leri bu değişkenleri okur).
+  const fontStack = getFontStack(business.font);
   const brandStyle = {
     "--brand": brandFill,
     "--brand-on": pickReadableOn(brandFill),
     "--brand-text": readableAccent(brand),
+    "--header-h": "4.75rem",
+    "--font-body": fontStack,
+    "--font-display": fontStack,
+    fontFamily: fontStack,
   } as CSSProperties;
 
   return (
-    <MenuContext.Provider value={{ business, base: basePath, cartLines: cart, addProduct, track, locale, setLocale, t, tf }}>
+    <MenuContext.Provider
+      value={{
+        business,
+        base: basePath,
+        cartLines: cart,
+        addProduct,
+        track,
+        locale,
+        setLocale,
+        t,
+        tf,
+        categories,
+        products,
+        categoriesLoading,
+        imageByCategory,
+        productCountByCategory,
+      }}
+    >
       <div
         lang={locale}
         dir={isRTLLocale(locale) ? "rtl" : "ltr"}
@@ -316,7 +417,6 @@ export function MenuProvider({
         className="min-h-screen bg-paper pb-24"
       >
         <TrackPageViews business={business} base={basePath} />
-        <LanguageSwitcher />
         {popup && !popupDismissed && <PopupModal popup={popup} onClose={dismissPopup} />}
         {pickerProduct && (
           <OptionPicker
@@ -330,7 +430,8 @@ export function MenuProvider({
           />
         )}
 
-        <MenuHeader business={business} base={basePath} />
+        <MenuHeader business={business} base={basePath} onOpenDrawer={() => setDrawerOpen(true)} />
+        {drawerOpen && <CategoryDrawer onClose={() => setDrawerOpen(false)} />}
         <main className="mx-auto max-w-3xl">{children}</main>
 
         <CartBar lines={cart} onOpen={() => setCartOpen(true)} />

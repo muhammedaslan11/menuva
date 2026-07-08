@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { whatsappLink } from "@/lib/site";
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
@@ -31,10 +32,12 @@ export function Navbar() {
           </a>
         </div>
         <a
-          href="#fiyat"
+          href={whatsappLink("Merhaba, menuva hakkında bilgi almak istiyorum.")}
+          target="_blank"
+          rel="noopener noreferrer"
           className="rounded-full bg-ink px-5 py-2.5 font-mono text-[13px] uppercase tracking-wider text-paper transition-colors hover:bg-paprika"
         >
-          Ücretsiz başla
+          Hemen başla
         </a>
       </nav>
     </header>

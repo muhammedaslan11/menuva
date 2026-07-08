@@ -35,6 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       locale: "tr_TR",
       type: "website",
     },
+    icons: business.logo_url ? { icon: business.logo_url } : undefined,
   };
 }
 

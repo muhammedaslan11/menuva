@@ -73,7 +73,7 @@ export default function ReviewPage() {
             href={business.google_review_url}
             target="_blank"
             rel="noreferrer"
-            className="mt-8 flex w-full max-w-xs items-center justify-center gap-2 rounded-2xl py-3.5 font-display font-bold shadow-lg transition-opacity hover:opacity-90"
+            className="mt-8 flex w-full max-w-xs items-center justify-center gap-2 rounded-xl py-3.5 font-display font-bold shadow-lg transition-opacity hover:opacity-90"
             style={{ background: "var(--brand)", color: "var(--brand-on)" }}
           >
             <StarIcon size={18} filled />
@@ -99,7 +99,7 @@ export default function ReviewPage() {
     <form onSubmit={handleSubmit} className="space-y-4 px-5 pb-10 pt-6">
       <h1 className="text-center font-display text-2xl font-extrabold">{t("reviewTitle")}</h1>
 
-      <div className="rounded-2xl border border-line p-5 text-center">
+      <div className="rounded-xl border border-line p-5 text-center">
         <p className="font-display text-lg font-bold">{t("firstVisitQuestion")}</p>
         <div className="mt-3 flex justify-center gap-3">
           {[
@@ -125,35 +125,35 @@ export default function ReviewPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-line p-5 text-center">
+      <div className="rounded-xl border border-line p-5 text-center">
         <p className="font-display text-lg font-bold">{t("hygieneQuestion")}</p>
         <div className="mt-3">
           <Stars value={hygiene} onChange={setHygiene} t={t} />
         </div>
       </div>
 
-      <div className="rounded-2xl border border-line p-5 text-center">
+      <div className="rounded-xl border border-line p-5 text-center">
         <p className="font-display text-lg font-bold">{t("satisfactionQuestion")}</p>
         <div className="mt-3">
           <Stars value={satisfaction} onChange={setSatisfaction} t={t} />
         </div>
       </div>
 
-      <div className="rounded-2xl border border-line p-5 text-center">
+      <div className="rounded-xl border border-line p-5 text-center">
         <p className="font-display text-lg font-bold">{t("revisitQuestion")}</p>
         <div className="mt-3">
           <Stars value={revisit} onChange={setRevisit} t={t} />
         </div>
       </div>
 
-      <div className="rounded-2xl border border-line p-5">
+      <div className="rounded-xl border border-line p-5">
         <p className="font-display text-lg font-bold">{t("otherCommentsQuestion")}</p>
         <textarea
           rows={4}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder={t("commentPlaceholder")}
-          className="mt-3 w-full rounded-xl border border-line bg-crema/40 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-[var(--brand)]"
+          className="mt-3 w-full rounded-lg border border-line bg-crema/40 px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-[var(--brand)]"
         />
       </div>
 
@@ -162,7 +162,7 @@ export default function ReviewPage() {
       <button
         type="submit"
         disabled={saving}
-        className="w-full rounded-2xl py-4 font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="w-full rounded-xl py-4 font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
         style={{ background: "var(--brand)", color: "var(--brand-on)" }}
       >
         {saving ? t("sending") : t("send")}

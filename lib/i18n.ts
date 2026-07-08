@@ -197,6 +197,13 @@ const UI_STRINGS = {
   },
   viewMenu: { tr: "Menüye göz at", en: "View menu", ar: "تصفح القائمة", ru: "Смотреть меню" },
   chooseLanguage: { tr: "Dil seçin", en: "Choose language", ar: "اختر اللغة", ru: "Выберите язык" },
+  categoriesLabel: { tr: "Kategoriler", en: "Categories", ar: "الفئات", ru: "Категории" },
+  productCount: {
+    tr: "{count} ürün",
+    en: "{count} items",
+    ar: "{count} منتج",
+    ru: "{count} товаров",
+  },
 } as const satisfies Record<string, Record<Locale, string>>;
 
 export type UIKey = keyof typeof UI_STRINGS;

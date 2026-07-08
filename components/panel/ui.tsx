@@ -21,7 +21,7 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   const { className = "", ...rest } = props;
   return (
     <input
-      className={`w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
+      className={`w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
       {...rest}
     />
   );
@@ -31,7 +31,7 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const { className = "", ...rest } = props;
   return (
     <textarea
-      className={`w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
+      className={`w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
       {...rest}
     />
   );
@@ -41,7 +41,7 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
   const { className = "", ...rest } = props;
   return (
     <select
-      className={`w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-paprika ${className}`}
+      className={`w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-paprika ${className}`}
       {...rest}
     />
   );
@@ -69,7 +69,7 @@ export function Button({ variant = "primary", loading, className = "", disabled,
 }
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-line bg-paper p-6 ${className}`}>{children}</div>;
+  return <div className={`rounded-xl border border-line bg-paper p-6 ${className}`}>{children}</div>;
 }
 
 export function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -91,7 +91,7 @@ export function ErrorText({ children }: { children: ReactNode }) {
 
 export function EmptyState({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line py-16 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-line py-16 text-center">
       <p className="font-display text-lg font-bold">{title}</p>
       {description && <p className="max-w-sm text-sm text-ink-soft">{description}</p>}
       {action}

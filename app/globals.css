@@ -94,9 +94,27 @@ body {
   animation: menu-drift 9s ease-in-out infinite;
 }
 
+/* Scroll ile görünür olan bölümler — ScrollReveal component'i .revealed ekler */
+[data-reveal] {
+  opacity: 0;
+  translate: 0 16px;
+  transition:
+    opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+    translate 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+[data-reveal].revealed {
+  opacity: 1;
+  translate: 0 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rise, .menu-drift {
     animation: none;
+  }
+  [data-reveal] {
+    opacity: 1;
+    translate: none;
+    transition: none;
   }
   html {
     scroll-behavior: auto;

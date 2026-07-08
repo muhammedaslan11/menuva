@@ -44,7 +44,7 @@ export function OptionPicker({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 sm:items-center sm:p-5" onClick={onClose}>
       <div
-        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-paper p-6 sm:rounded-3xl"
+        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-paper p-6 sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-display text-xl font-bold">{tf(product, "name")}</h2>
@@ -56,7 +56,7 @@ export function OptionPicker({
                 {groupOptions.map((opt) => (
                   <label
                     key={opt.id}
-                    className="flex cursor-pointer items-center justify-between rounded-xl border border-line px-4 py-2.5 text-sm transition-colors has-[:checked]:border-[var(--brand)] has-[:checked]:bg-[var(--brand)]/5"
+                    className="flex cursor-pointer items-center justify-between rounded-lg border border-line px-4 py-2.5 text-sm transition-colors has-[:checked]:border-[var(--brand)] has-[:checked]:bg-[var(--brand)]/5"
                   >
                     <span className="flex items-center gap-2">
                       <input

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMenu } from "@/components/menu/menu-provider";
 import { highlightLabels } from "@/lib/labels";
@@ -36,21 +35,19 @@ export default function WelcomePage() {
 
   return (
     <div className="flex flex-col items-center px-5 pb-10 text-center">
-      {/* Kapak şeridi */}
-      <div className="relative -mx-5 h-32 w-[calc(100%+2.5rem)] overflow-hidden sm:h-40">
-        {business.cover_url ? (
-          <>
-            <Image src={business.cover_url} alt="" fill priority className="object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-paper" />
-          </>
-        ) : (
-          <div className="h-full w-full" style={{ background: "var(--brand)", opacity: 0.15 }} />
-        )}
-      </div>
+      {/* Kapak şeridi — görsel yoksa hiç gösterilmez */}
+      {business.cover_url && (
+        <div className="relative -mx-5 h-32 w-[calc(100%+2.5rem)] overflow-hidden sm:h-40">
+          <picture>
+            <img src={business.cover_url} alt="" loading="eager" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
+          </picture>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-paper" />
+        </div>
+      )}
 
       {/* Sosyal ikonlar */}
       {iconLinks.length > 0 && (
-        <div className="z-10 -mt-6 flex flex-wrap justify-center gap-3">
+        <div className={`z-10 flex flex-wrap justify-center gap-3 ${business.cover_url ? "-mt-6" : "mt-8"}`}>
           {iconLinks.slice(0, 4).map((s) => (
             <a
               key={s.label}
@@ -59,7 +56,7 @@ export default function WelcomePage() {
               rel="noreferrer"
               title={s.label}
               aria-label={s.label}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl border border-line bg-paper text-ink shadow-sm transition-transform hover:scale-105"
+              className="flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-paper text-ink shadow-sm transition-transform hover:scale-105"
             >
               <s.Icon size={22} />
             </a>
@@ -69,8 +66,10 @@ export default function WelcomePage() {
 
       {/* Logo + isim */}
       {business.logo_url && (
-        <div className="relative mt-6 h-28 w-28 overflow-hidden rounded-3xl border-4 border-paper bg-paper shadow-xl">
-          <Image src={business.logo_url} alt={name} fill priority className="object-cover" />
+        <div className="relative mt-6 h-28 w-28 overflow-hidden rounded-2xl border-4 border-paper bg-paper shadow-xl">
+          <picture>
+            <img src={business.logo_url} alt={name} loading="eager" className="absolute inset-0 h-full w-full object-cover" />
+          </picture>
         </div>
       )}
       <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight">{name}</h1>
@@ -103,7 +102,7 @@ export default function WelcomePage() {
       {/* Menü butonu */}
       <Link
         href={`${base}/menu`}
-        className="mt-8 w-full max-w-sm rounded-2xl py-4 text-center font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90"
+        className="mt-8 w-full max-w-sm rounded-xl py-4 text-center font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90"
         style={{ background: "var(--brand)", color: "var(--brand-on)" }}
       >
         {t("menuButton")}
@@ -121,7 +120,7 @@ export default function WelcomePage() {
       {/* Adres + çalışma saatleri */}
       <div className="mt-8 w-full max-w-sm space-y-3 text-left">
         {(business.address || business.google_maps_url) && (
-          <div className="rounded-2xl border border-line bg-crema/40 p-4">
+          <div className="rounded-xl border border-line bg-crema/40 p-4">
             <p className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
               <MapPinIcon size={14} /> {t("addressLabel")}
             </p>
@@ -137,7 +136,7 @@ export default function WelcomePage() {
           </div>
         )}
         {business.working_hours && (
-          <div className="rounded-2xl border border-line bg-crema/40 p-4">
+          <div className="rounded-xl border border-line bg-crema/40 p-4">
             <p className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
               <ClockIcon size={14} /> {t("workingHoursLabel")}
             </p>

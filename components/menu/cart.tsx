@@ -10,14 +10,18 @@ export function CartBar({ lines, onOpen }: { lines: CartLine[]; onOpen: () => vo
   const count = cartCount(lines);
   if (count === 0) return null;
   return (
-    <button
-      onClick={onOpen}
-      style={{ background: "var(--brand)", color: "var(--brand-on)" }}
-      className="fixed inset-x-4 bottom-20 z-40 flex items-center justify-between rounded-2xl px-5 py-4 shadow-[0_20px_40px_-12px_rgba(35,24,18,0.5)] sm:inset-x-auto sm:end-6 sm:w-96"
-    >
-      <span className="font-mono text-[13px] uppercase tracking-wider">{t("cartBarLabel", { count })}</span>
-      <span className="font-mono text-base font-bold">{formatPrice(cartTotal(lines))}</span>
-    </button>
+    <div className="pointer-events-none fixed inset-x-0 bottom-20 z-40 px-4">
+      <div className="mx-auto flex max-w-3xl justify-end">
+        <button
+          onClick={onOpen}
+          style={{ background: "var(--brand)", color: "var(--brand-on)" }}
+          className="pointer-events-auto flex w-full items-center justify-between rounded-xl px-5 py-4 shadow-[0_20px_40px_-12px_rgba(35,24,18,0.5)] sm:w-96"
+        >
+          <span className="font-mono text-[13px] uppercase tracking-wider">{t("cartBarLabel", { count })}</span>
+          <span className="font-mono text-base font-bold">{formatPrice(cartTotal(lines))}</span>
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -36,7 +40,7 @@ export function CartDrawer({
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 sm:items-center sm:p-5" onClick={onClose}>
       <div
-        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-paper p-6 sm:rounded-3xl"
+        className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-paper p-6 sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

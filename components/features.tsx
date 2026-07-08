@@ -36,7 +36,7 @@ const adminTools = [
   { icon: "💯", name: "Kampanyalar", desc: "İndirim tanımlayın, menüde otomatik görünsün" },
   { icon: "🔥", name: "Kalori bilgisi", desc: "Ürün başına kalori değeri gösterin" },
   { icon: "🦠", name: "Alerjen uyarıları", desc: "Gluten, fıstık, laktoz — müşteri güveni kazanın" },
-  { icon: "🪟", name: "Pop-up duyurular", desc: "Menü açılışında kampanya ya da duyuru gösterin" },
+  { icon: "🪟", name: "Pop-up kampanyalar", desc: "Menü açılışında kampanya ya da duyuru gösterin" },
   { icon: "🔄", name: "Ürün seçenekleri", desc: "Boy, ekstra malzeme gibi varyantlar ekleyin" },
 ];
 
@@ -56,7 +56,7 @@ export function MenuFeatures() {
 
         <div className="mt-14 space-y-9">
           {menuFeatures.map((f) => (
-            <div key={f.name}>
+            <div key={f.name} data-reveal>
               <div className="dot-leader">
                 <h3 className="font-display text-xl font-bold md:text-2xl">
                   {f.name}
@@ -99,7 +99,8 @@ export function AdminTools() {
         {adminTools.map((t) => (
           <div
             key={t.name}
-            className="group rounded-2xl border border-line bg-paper p-6 transition-colors hover:border-paprika"
+            data-reveal
+            className="group rounded-xl border border-line bg-paper p-6 transition-colors hover:border-paprika"
           >
             <span className="text-2xl" aria-hidden>
               {t.icon}
@@ -146,7 +147,7 @@ export function HowItWorks() {
 
         <div className="mt-14 grid gap-10 md:grid-cols-3">
           {steps.map((s) => (
-            <div key={s.n} className="border-t-2 border-paprika pt-5">
+            <div key={s.n} data-reveal className="border-t-2 border-paprika pt-5">
               <span className="font-mono text-sm text-paprika">{s.n}.</span>
               <h3 className="mt-2 font-display text-2xl font-bold">
                 {s.title}

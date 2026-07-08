@@ -41,11 +41,11 @@ export default function AnnouncementsPage() {
   return (
     <div>
       <PageHeader
-        title="Duyurular"
+        title="Kampanyalar"
         description="Müşteri menüyü açtığında gösterilecek kampanya ya da duyuru."
         action={
           <Link href="/panel/popups/new">
-            <Button>+ Yeni duyuru</Button>
+            <Button>+ Yeni kampanya</Button>
           </Link>
         }
       />
@@ -68,7 +68,7 @@ export default function AnnouncementsPage() {
             <div className="flex items-center gap-4">
               {p.image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.image_url} alt="" className="h-12 w-12 rounded-xl object-cover" />
+                <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />
               )}
               <div>
                 <p className="font-display font-bold">

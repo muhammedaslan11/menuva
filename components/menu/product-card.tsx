@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import type { Product, Template } from "@/lib/types";
 import { allergenLabels, badgeLabels } from "@/lib/labels";
 import { formatPrice } from "@/lib/format";
@@ -29,7 +28,8 @@ export function ProductCard({
   return (
     <div
       onClick={onOpen}
-      className={`group rounded-2xl border border-line bg-paper p-4 transition-colors hover:border-[var(--brand)] ${
+      data-reveal
+      className={`group rounded-xl border border-line bg-paper p-4 transition-colors hover:border-[var(--brand)] ${
         onOpen ? "cursor-pointer " : ""
       }${isGrid ? "flex flex-col" : "flex gap-4"}`}
     >
@@ -37,11 +37,13 @@ export function ProductCard({
         <div
           className={
             isGrid
-              ? "relative mb-3 aspect-square w-full overflow-hidden rounded-xl bg-crema"
-              : "relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-crema"
+              ? "relative mb-3 aspect-square w-full overflow-hidden rounded-lg bg-crema"
+              : "relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-crema"
           }
         >
-          <Image src={image} alt={name} fill sizes="(max-width: 640px) 40vw, 200px" className="object-cover" />
+          <picture>
+            <img src={image} alt={name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+          </picture>
         </div>
       )}
       <div className="flex flex-1 flex-col">

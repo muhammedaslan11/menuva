@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { whatsappLink } from "@/lib/site";
 
 const plans = [
   {
@@ -20,12 +21,12 @@ const plans = [
       "Sınırsız ürün & kategori",
       "Rozetler & kampanyalar",
       "Kalori & alerjen bilgisi",
-      "Pop-up duyurular",
+      "Pop-up kampanyalar",
       "Sipariş sepeti",
       "Markanıza özel tasarım",
     ],
     cta: "Erken erişime katıl",
-    href: "mailto:merhaba@menuva.app",
+    href: whatsappLink("Merhaba, Menuva Premium paket hakkında bilgi almak istiyorum."),
     highlight: true,
   },
   {
@@ -33,9 +34,9 @@ const plans = [
     price: "—",
     period: "yıllık, yakında",
     desc: "Zincirler ve çoklu şubeler için",
-    features: ["Premium'daki her şey", "Çoklu şube yönetimi", "Özel alan adı", "Öncelikli destek"],
+    features: ["Menuva Premium'daki her şey", "Çoklu şube yönetimi", "Özel alan adı", "Öncelikli destek"],
     cta: "Bize yazın",
-    href: "mailto:merhaba@menuva.app",
+    href: whatsappLink("Merhaba, Menuva Elite paket hakkında bilgi almak istiyorum."),
     highlight: false,
   },
 ];
@@ -57,9 +58,10 @@ export function Pricing() {
         {plans.map((p) => (
           <div
             key={p.name}
-            className={`flex flex-col rounded-3xl border p-8 ${p.highlight
-                ? "border-paprika bg-ink text-paper shadow-[0_24px_50px_-20px_rgba(232,73,31,0.4)]"
-                : "border-line bg-paper"
+            data-reveal
+            className={`flex flex-col rounded-2xl border p-8 ${p.highlight
+              ? "border-paprika bg-ink text-paper shadow-[0_24px_50px_-20px_rgba(232,73,31,0.4)]"
+              : "border-line bg-paper"
               }`}
           >
             <h3 className="font-display text-xl font-bold">{p.name}</h3>
@@ -92,9 +94,11 @@ export function Pricing() {
             </ul>
             <Link
               href={p.href}
+              target={p.href.startsWith("http") ? "_blank" : undefined}
+              rel={p.href.startsWith("http") ? "noopener noreferrer" : undefined}
               className={`mt-8 rounded-full py-3.5 text-center font-mono text-[13px] uppercase tracking-wider transition-colors ${p.highlight
-                  ? "bg-paprika text-paper hover:bg-paprika-deep"
-                  : "border border-ink text-ink hover:bg-ink hover:text-paper"
+                ? "bg-paprika text-paper hover:bg-paprika-deep"
+                : "border border-ink text-ink hover:bg-ink hover:text-paper"
                 }`}
             >
               {p.cta}
@@ -134,7 +138,7 @@ export function FAQ() {
         </h2>
         <div className="mt-10 divide-y divide-line">
           {faqs.map((f) => (
-            <details key={f.q} className="group py-5">
+            <details key={f.q} data-reveal className="group py-5">
               <summary className="flex cursor-pointer list-none items-center justify-between font-display text-lg font-bold">
                 {f.q}
                 <span
@@ -156,16 +160,18 @@ export function FAQ() {
 export function ClosingCTA() {
   return (
     <section className="bg-paprika">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-7 px-5 py-20 text-center">
+      <div data-reveal className="mx-auto flex max-w-6xl flex-col items-center gap-7 px-5 py-20 text-center">
         <h2 className="max-w-2xl font-display text-4xl font-extrabold tracking-tight text-paper md:text-5xl">
           Menünüz bu akşam yayında olabilir.
         </h2>
-        <Link
-          href="/panel/register"
+        <a
+          href={whatsappLink("Merhaba, menuva hakkında bilgi almak istiyorum.")}
+          target="_blank"
+          rel="noopener noreferrer"
           className="rounded-full bg-ink px-9 py-4 font-mono text-sm uppercase tracking-wider text-paper transition-transform hover:scale-105"
         >
-          Ücretsiz başla
-        </Link>
+          Hemen başla
+        </a>
         <p className="font-mono text-xs uppercase tracking-wider text-paper/70">
           Kredi kartı gerekmez · 5 dakikada kurulum
         </p>

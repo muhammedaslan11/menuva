@@ -76,7 +76,7 @@ export function PopupForm({
           <div className="flex items-center gap-4">
             {imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={imageUrl} alt="" className="h-16 w-16 rounded-xl object-cover" />
+              <img src={imageUrl} alt="" className="h-16 w-16 rounded-lg object-cover" />
             )}
             <label className="cursor-pointer rounded-full border border-line px-4 py-2 font-mono text-[12px] uppercase tracking-wider text-ink-soft hover:border-paprika hover:text-paprika">
               {uploading ? "Yükleniyor…" : "Görsel yükle"}

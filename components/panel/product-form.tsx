@@ -155,7 +155,7 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
         <Label>Görseller</Label>
         <div className="flex flex-wrap gap-3">
           {images.map((url) => (
-            <div key={url} className="relative h-20 w-20 overflow-hidden rounded-xl border border-line">
+            <div key={url} className="relative h-20 w-20 overflow-hidden rounded-lg border border-line">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="h-full w-full object-cover" />
               <button
@@ -168,7 +168,7 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
               </button>
             </div>
           ))}
-          <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-xl border border-dashed border-line text-xs text-ink-soft hover:border-paprika hover:text-paprika">
+          <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border border-dashed border-line text-xs text-ink-soft hover:border-paprika hover:text-paprika">
             {uploading ? "…" : "+ Ekle"}
             <input
               type="file"

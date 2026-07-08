@@ -102,7 +102,7 @@ export default function ProductsPage() {
               <div className="space-y-3">
                 {items.map((product) => (
                   <Card key={product.id} className="flex items-center gap-4">
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-crema">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-crema">
                       {product.images?.[0] && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />

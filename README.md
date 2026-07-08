@@ -23,7 +23,7 @@ http://localhost:3000 adresinde açılır. (`.env.local` zaten hazır — Pocket
 ## Yapı
 
 - `app/page.tsx` — landing page
-- `app/panel/*` — işletme sahibi yönetim paneli (giriş/kayıt, kategoriler, ürünler, duyurular, QR, ayarlar)
+- `app/panel/*` — işletme sahibi yönetim paneli (giriş/kayıt, kategoriler, ürünler, kampanyalar, QR, ayarlar)
 - `app/[slug]/page.tsx` — müşteri menü sayfası (SSR + SEO + sepet + realtime)
 - `app/api/upload/route.ts` — görsel yükleme (MinIO'ya yazar, sahiplik kontrolü yapar)
 - `lib/` — pocketbase istemcisi, minio istemcisi, tipler, sepet, slug, etiketler

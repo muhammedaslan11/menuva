@@ -18,3 +18,10 @@ export function menuUrl(slug: string): string {
   }
   return `https://${menuHost(slug)}`;
 }
+
+// Satış/bilgi talepleri için WhatsApp hattı.
+const WHATSAPP_NUMBER = "905357631908";
+
+export function whatsappLink(message: string): string {
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
