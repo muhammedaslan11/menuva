@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="rounded-xl border border-line bg-paper p-8">
+    <div className="rounded-2xl border border-line bg-paper p-8">
       <h1 className="font-display text-xl font-bold">Panele giriş yap</h1>
       <p className="mt-1 text-sm text-ink-soft">Menünü yönetmek için giriş yap.</p>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">

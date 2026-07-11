@@ -9,12 +9,13 @@ import { getThemeColor } from "@/lib/themes";
 import { getFontStack } from "@/lib/fonts";
 import { lineKey, loadCart, saveCart, unitPriceFor, type CartLine, type CartSelection } from "@/lib/cart";
 import {
+  activeLocales,
   getStoredLocale,
   isRTLLocale,
   localeCodes,
   localeLabels,
+  mainLocale,
   storeLocale,
-  SUPPORTED_LOCALES,
   tField,
   t as translate,
   type Locale,
@@ -38,6 +39,8 @@ interface MenuContextValue {
   track: (type: MenuEventType, target: string, label: string) => void;
   locale: Locale;
   setLocale: (locale: Locale) => void;
+  /** İşletmenin aktif dilleri (Türkçe dahil). Dil seçici yalnızca bunları gösterir. */
+  locales: Locale[];
   t: (key: UIKey, vars?: Record<string, string | number>) => string;
   tf: (entity: Translatable, field: TranslatableField) => string;
   categories: Category[];
@@ -198,8 +201,11 @@ function BottomNav({ base }: { base: string }) {
 }
 
 function LanguageSwitcher() {
-  const { locale, setLocale, t } = useMenu();
+  const { locale, setLocale, locales, t } = useMenu();
   const [open, setOpen] = useState(false);
+
+  // Tek dil (yalnızca Türkçe) aktifse seçiciyi gösterme.
+  if (locales.length <= 1) return null;
 
   return (
     <div className="relative z-50 shrink-0">
@@ -213,7 +219,7 @@ function LanguageSwitcher() {
       </button>
       {open && (
         <div className="absolute end-0 top-12 z-50 min-w-[10rem] overflow-hidden rounded-xl border border-line bg-paper shadow-lg">
-          {SUPPORTED_LOCALES.map((l) => (
+          {locales.map((l) => (
             <button
               key={l}
               onClick={() => {
@@ -249,7 +255,7 @@ export function MenuProvider({
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
   const [pickerOptions, setPickerOptions] = useState<ProductOption[]>([]);
   const [popupDismissed, setPopupDismissed] = useState(true);
-  const [locale, setLocaleState] = useState<Locale>("tr");
+  const [locale, setLocaleState] = useState<Locale>(() => mainLocale(business));
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -302,9 +308,15 @@ export function MenuProvider({
     return map;
   }, [products]);
 
+  const baseLocale = mainLocale(business);
+  const locales = useMemo(() => activeLocales(business), [business]);
+
+  // Ziyaretçinin kayıtlı dili artık aktif değilse (işletme dili kapatmış olabilir)
+  // işletmenin ana diline düş.
   useEffect(() => {
-    setLocaleState(getStoredLocale());
-  }, []);
+    const stored = getStoredLocale();
+    setLocaleState(locales.includes(stored) ? stored : baseLocale);
+  }, [locales, baseLocale]);
 
   function setLocale(next: Locale) {
     setLocaleState(next);
@@ -316,7 +328,7 @@ export function MenuProvider({
   }
 
   function tf(entity: Translatable, field: TranslatableField) {
-    return tField(entity, field, locale);
+    return tField(entity, field, locale, baseLocale);
   }
 
   useEffect(() => {
@@ -401,6 +413,7 @@ export function MenuProvider({
         track,
         locale,
         setLocale,
+        locales,
         t,
         tf,
         categories,

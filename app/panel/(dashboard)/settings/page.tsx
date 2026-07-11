@@ -4,70 +4,128 @@ import { useState, type FormEvent } from "react";
 import { ClientResponseError } from "pocketbase";
 import { pb } from "@/lib/pocketbase";
 import { useBusiness } from "@/components/panel/business-context";
-import { uploadFile } from "@/lib/upload";
+import { uploadFile, type UploadKind } from "@/lib/upload";
 import { isReservedSlug, slugify } from "@/lib/slug";
 import { themes } from "@/lib/themes";
 import { fonts, DEFAULT_FONT, getFontStack } from "@/lib/fonts";
 import { ROOT_DOMAIN } from "@/lib/site";
 import { highlightLabels } from "@/lib/labels";
 import { HighlightIcon } from "@/components/icons";
-import { Button, Card, ErrorText, Input, Label, PageHeader, Select, Textarea } from "@/components/panel/ui";
-import { TranslationsEditor } from "@/components/panel/translations-editor";
-import type { Translations } from "@/lib/i18n";
+import { Card, ErrorText, FormActions, Input, Label, PageHeader, Select, Spinner, Tabs, Textarea } from "@/components/panel/ui";
+import { MultiLangFields } from "@/components/panel/multi-lang-fields";
+import {
+  activeNonMainLocales,
+  localeCodes,
+  localeLabels,
+  mainLocale,
+  SUPPORTED_LOCALES,
+  type Locale,
+  type Translations,
+} from "@/lib/i18n";
 import type { Business, Highlight, Template } from "@/lib/types";
 
 const ALL_HIGHLIGHTS = Object.keys(highlightLabels.tr) as Highlight[];
 const MAX_HIGHLIGHTS = 3;
 
-function ImagePicker({
-  label,
-  value,
-  onChange,
-  businessId,
-  kind,
-  aspect,
-}: {
-  label: string;
-  value: string;
-  onChange: (url: string) => void;
-  businessId: string;
-  kind: "logo" | "cover";
-  aspect: string;
-}) {
-  const [uploading, setUploading] = useState(false);
+type SettingsTab = "genel" | "diller" | "tema" | "ozellik" | "iletisim" | "sosyal";
+const SETTINGS_TABS: { key: SettingsTab; label: string }[] = [
+  { key: "genel", label: "Genel bilgiler" },
+  { key: "diller", label: "Menü dilleri" },
+  { key: "tema", label: "Tema" },
+  { key: "ozellik", label: "Öne çıkan özellikler" },
+  { key: "iletisim", label: "Adres & iletişim" },
+  { key: "sosyal", label: "Sosyal medya" },
+];
 
-  async function handleFile(files: FileList | null) {
+// Kapak + yuvarlak logo başlığı (sosyal profil düzeni). Logo kapağın sol altına
+// yarısı binecek şekilde oturur; ikisi de yerinde değiştirilebilir, yükleme
+// sırasında loader gösterilir.
+function ProfileImages({
+  businessId,
+  logoUrl,
+  coverUrl,
+  onLogo,
+  onCover,
+}: {
+  businessId: string;
+  logoUrl: string;
+  coverUrl: string;
+  onLogo: (url: string) => void;
+  onCover: (url: string) => void;
+}) {
+  const [logoBusy, setLogoBusy] = useState(false);
+  const [coverBusy, setCoverBusy] = useState(false);
+
+  async function upload(
+    files: FileList | null,
+    kind: UploadKind,
+    setBusy: (b: boolean) => void,
+    onChange: (url: string) => void
+  ) {
     const file = files?.[0];
     if (!file) return;
-    setUploading(true);
+    setBusy(true);
     try {
-      const url = await uploadFile(file, businessId, kind);
-      onChange(url);
+      onChange(await uploadFile(file, businessId, kind));
     } finally {
-      setUploading(false);
+      setBusy(false);
     }
   }
 
   return (
-    <div>
-      <Label>{label}</Label>
-      <div className={`relative overflow-hidden rounded-lg border border-dashed border-line bg-crema/30 ${aspect}`}>
-        {value ? (
+    <div className="pb-2">
+      {/* Kapak */}
+      <div className="relative h-36 w-full overflow-hidden rounded-2xl border border-line bg-crema/40 sm:h-44">
+        {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt={label} className="h-full w-full object-cover" />
+          <img src={coverUrl} alt="Kapak" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-ink-soft">Görsel yok</div>
+          <div className="flex h-full items-center justify-center text-xs text-ink-soft">Kapak görseli yok</div>
         )}
-        <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-ink/0 text-transparent transition-colors hover:bg-ink/40 hover:text-paper">
-          <span className="font-mono text-[11px] uppercase tracking-wider">{uploading ? "Yükleniyor…" : "Değiştir"}</span>
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
-            className="hidden"
-            disabled={uploading}
-            onChange={(e) => handleFile(e.target.files)}
-          />
-        </label>
+        {coverBusy && (
+          <div className="absolute inset-0 flex items-center justify-center bg-ink/40">
+            <Spinner className="h-7 w-7 text-paper" />
+          </div>
+        )}
+        {!coverBusy && (
+          <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-ink/0 text-transparent transition-colors hover:bg-ink/40 hover:text-paper">
+            <span className="font-mono text-[11px] uppercase tracking-wider">{coverUrl ? "Kapağı değiştir" : "Kapak yükle"}</span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+              className="hidden"
+              onChange={(e) => upload(e.target.files, "cover", setCoverBusy, onCover)}
+            />
+          </label>
+        )}
+      </div>
+
+      {/* Logo — kapağın sol altına biner */}
+      <div className="relative z-10 -mt-12 ml-5 h-24 w-24">
+        <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-paper bg-crema shadow-md">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full items-center justify-center text-center text-[10px] leading-tight text-ink-soft">Logo yok</div>
+          )}
+          {logoBusy && (
+            <div className="absolute inset-0 flex items-center justify-center bg-ink/40">
+              <Spinner className="h-6 w-6 text-paper" />
+            </div>
+          )}
+          {!logoBusy && (
+            <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-ink/0 text-transparent transition-colors hover:bg-ink/50 hover:text-paper">
+              <span className="font-mono text-[9px] uppercase tracking-wider">Değiştir</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+                className="hidden"
+                onChange={(e) => upload(e.target.files, "logo", setLogoBusy, onLogo)}
+              />
+            </label>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -105,10 +163,24 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
   const [template, setTemplate] = useState<Template>(business.template || "liste");
   const [logoUrl, setLogoUrl] = useState(business.logo_url);
   const [coverUrl, setCoverUrl] = useState(business.cover_url);
+  const [mainLang, setMainLang] = useState<Locale>(mainLocale(business));
+  // Ana dil dışındaki aktif ek diller.
+  const [languages, setLanguages] = useState<Locale[]>(activeNonMainLocales(business));
   const [translations, setTranslations] = useState<Translations>(business.translations ?? {});
+  const [tab, setTab] = useState<SettingsTab>("genel");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  // Ana dili değiştirince, o dil ek diller listesinden çıkarılır.
+  function changeMainLang(next: Locale) {
+    setMainLang(next);
+    setLanguages((prev) => prev.filter((l) => l !== next));
+  }
+
+  function toggleLanguage(l: Locale) {
+    setLanguages((prev) => (prev.includes(l) ? prev.filter((x) => x !== l) : [...prev, l]));
+  }
 
   function toggleHighlight(h: Highlight) {
     setHighlights((prev) => {
@@ -149,6 +221,8 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
         template,
         logo_url: logoUrl,
         cover_url: coverUrl,
+        main_language: mainLang,
+        languages,
         translations,
       });
       onSaved(updated);
@@ -170,22 +244,41 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
     year: "numeric",
   });
 
+  const extraOptions = SUPPORTED_LOCALES.filter((l) => l !== mainLang);
+
   return (
     <div>
       <PageHeader title="İşletme ayarları" description={savedAt ? "Kaydedildi ✓" : "Menünün görünümünü ve bilgilerini düzenle."} />
       <form onSubmit={handleSubmit} className="space-y-8">
+        <FormActions saving={saving} saved={!!savedAt} />
+        <ErrorText>{error}</ErrorText>
+
+        <Tabs tabs={SETTINGS_TABS} active={tab} onChange={setTab} />
+
+        {tab === "genel" && (
+          <div className="space-y-8">
+        {/* Kapak + logo başlığı */}
         <Card className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Genel bilgiler</p>
-            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Kayıt tarihi: {registeredAt}</p>
-          </div>
+          <ProfileImages
+            businessId={business.id}
+            logoUrl={logoUrl}
+            coverUrl={coverUrl}
+            onLogo={setLogoUrl}
+            onCover={setCoverUrl}
+          />
+        </Card>
+
+        {/* Genel bilgiler */}
+        <Card className="space-y-4">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Kayıt tarihi: {registeredAt}</p>
           <div>
             <Label htmlFor="b-name">İşletme adı</Label>
             <Input id="b-name" required value={name} onChange={(e) => setName(e.target.value)} />
+            <p className="mt-1.5 text-xs text-ink-soft">İşletme adı tekildir, tüm dillerde aynı görünür.</p>
           </div>
           <div>
             <Label htmlFor="b-slug">Menü adresi</Label>
-            <div className="flex items-center gap-1 rounded-lg border border-line bg-crema/40 px-4 py-2.5 text-sm">
+            <div className="flex items-center gap-1 rounded-2xl border border-line bg-crema/40 px-4 py-2.5 text-sm">
               <input
                 id="b-slug"
                 required
@@ -197,24 +290,16 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
             </div>
             <p className="mt-1.5 text-xs text-ink-soft">Adresi değiştirirsen eski QR kodların çalışmaz, yeniden bastırman gerekir.</p>
           </div>
-          <div>
-            <Label htmlFor="b-desc">Açıklama</Label>
-            <Textarea id="b-desc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
-          </div>
-          <div className="border-t border-line pt-4">
-            <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-ink-soft">
-              Çeviriler (opsiyonel) — boş bırakılırsa Türkçe gösterilir
-            </p>
-            <TranslationsEditor
-              value={translations}
-              onChange={setTranslations}
-              fields={[
-                { key: "name", label: "İşletme adı" },
-                { key: "description", label: "Açıklama", multiline: true },
-              ]}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+          <MultiLangFields
+            locales={[mainLang, ...languages]}
+            mainLocale={mainLang}
+            base={{ description }}
+            onBaseChange={(_, v) => setDescription(v)}
+            translations={translations}
+            onTranslationsChange={setTranslations}
+            fields={[{ key: "description", label: "Açıklama", multiline: true }]}
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="b-email">E-posta</Label>
               <Input id="b-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="merhaba@isletme.com" />
@@ -225,37 +310,78 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
             </div>
           </div>
         </Card>
+          </div>
+        )}
 
-        <Card className="grid gap-4 sm:grid-cols-2">
-          <ImagePicker label="Logo" value={logoUrl} onChange={setLogoUrl} businessId={business.id} kind="logo" aspect="aspect-square" />
-          <ImagePicker
-            label="Kapak görseli"
-            value={coverUrl}
-            onChange={setCoverUrl}
-            businessId={business.id}
-            kind="cover"
-            aspect="aspect-[2/1]"
-          />
+        {tab === "diller" && (
+        <Card className="space-y-4">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Menü dilleri</p>
+            <p className="mt-1 text-xs text-ink-soft">
+              Ana dil, metinlerin girildiği baz dildir. Ek diller için ürün/kategori/açıklama çevirilerini girebilirsin;
+              müşteri menüsünde dil seçimi bu dillerle sınırlanır.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="b-mainlang">Ana dil</Label>
+              <Select id="b-mainlang" value={mainLang} onChange={(e) => changeMainLang(e.target.value as Locale)}>
+                {SUPPORTED_LOCALES.map((l) => (
+                  <option key={l} value={l}>
+                    {localeLabels[l]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label>Ek diller</Label>
+            <div className="flex flex-wrap gap-2">
+              {extraOptions.map((l) => {
+                const selected = languages.includes(l);
+                return (
+                  <button
+                    type="button"
+                    key={l}
+                    onClick={() => toggleLanguage(l)}
+                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                      selected
+                        ? "border-paprika bg-paprika text-paper"
+                        : "border-line text-ink-soft hover:border-paprika hover:text-paprika"
+                    }`}
+                  >
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider">{localeCodes[l]}</span>
+                    {localeLabels[l]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <p className="text-xs text-ink-soft">
+            Açıklama çevirilerini &ldquo;Genel bilgiler&rdquo; sekmesindeki dil sekmelerinden girebilirsin.
+          </p>
         </Card>
+        )}
 
+        {tab === "tema" && (
         <Card className="space-y-4">
           <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Tema</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="b-theme">Tema rengi</Label>
               <Select id="b-theme" value={theme} onChange={(e) => setTheme(e.target.value)}>
-                {Object.entries(themes).map(([key, { name, color }]) => (
+                {Object.entries(themes).map(([key, { name }]) => (
                   <option key={key} value={key}>
                     {name}
                   </option>
                 ))}
               </Select>
-              <div className="mt-3 flex items-center gap-3 rounded-lg border border-line p-3">
+              <div className="mt-3 flex items-center gap-3 rounded-2xl border border-line p-3">
                 <div
                   className="h-8 w-8 rounded-full border-2 border-white shadow-md"
                   style={{ backgroundColor: themes[theme as keyof typeof themes]?.color || themes.paprika.color }}
                 />
-                <span className="text-sm font-mono uppercase tracking-wider text-ink-soft">
+                <span className="font-mono text-sm uppercase tracking-wider text-ink-soft">
                   {themes[theme as keyof typeof themes]?.name || "Paprika"}
                 </span>
               </div>
@@ -267,7 +393,7 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
                 <option value="grid">Grid / Kart</option>
               </Select>
             </div>
-            <div className="col-span-2 sm:col-span-1">
+            <div className="sm:col-span-2">
               <Label htmlFor="b-font">Yazı tipi</Label>
               <Select id="b-font" value={font} onChange={(e) => setFont(e.target.value)}>
                 {Object.entries(fonts).map(([key, { name }]) => (
@@ -276,14 +402,16 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
                   </option>
                 ))}
               </Select>
-              <div className="mt-3 rounded-lg border border-line p-3" style={{ fontFamily: getFontStack(font) }}>
+              <div className="mt-3 rounded-2xl border border-line p-3" style={{ fontFamily: getFontStack(font) }}>
                 <p className="text-base font-bold">Izgara Köfte — 285₺</p>
                 <p className="text-sm text-ink-soft">Menünüz bu yazı tipiyle görünür.</p>
               </div>
             </div>
           </div>
         </Card>
+        )}
 
+        {tab === "ozellik" && (
         <Card className="space-y-3">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Öne çıkan özellikler</p>
@@ -312,8 +440,11 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
             })}
           </div>
         </Card>
+        )}
 
+        {tab === "iletisim" && (
         <Card className="space-y-4">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Adres & iletişim</p>
           <div>
             <Label htmlFor="b-address">Adres</Label>
             <Input id="b-address" value={address} onChange={(e) => setAddress(e.target.value)} />
@@ -346,25 +477,21 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
               placeholder="https://g.page/r/... veya https://search.google.com/local/writereview?placeid=..."
             />
             <p className="mt-1.5 text-xs text-ink-soft">
-              Doluysa değerlendirme gönderen müşteriye &ldquo;Google&apos;da da değerlendir&rdquo; butonu gösterilir. Linki Google
-              Business Profile panelindeki &ldquo;Yorum isteyin&rdquo; kısmından alabilirsin.
+              Doluysa değerlendirme gönderen müşteriye &ldquo;Google&apos;da da değerlendir&rdquo; butonu gösterilir.
             </p>
           </div>
           <div>
             <Label htmlFor="b-wifi">WiFi şifresi</Label>
-            <Input
-              id="b-wifi"
-              value={wifiPassword}
-              onChange={(e) => setWifiPassword(e.target.value)}
-              placeholder="kafe-wifi-2026"
-            />
+            <Input id="b-wifi" value={wifiPassword} onChange={(e) => setWifiPassword(e.target.value)} placeholder="kafe-wifi-2026" />
             <p className="mt-1.5 text-xs text-ink-soft">Doluysa menünün karşılama sayfasında müşteriye gösterilir.</p>
           </div>
         </Card>
+        )}
 
+        {tab === "sosyal" && (
         <Card className="space-y-4">
-          <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Sosyal medya & iletişim</p>
-          <div className="grid grid-cols-2 gap-3">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Sosyal medya</p>
+          <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label htmlFor="b-whatsapp">WhatsApp</Label>
               <Input id="b-whatsapp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+90 555 123 45 67" />
@@ -387,11 +514,9 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
             </div>
           </div>
         </Card>
+        )}
 
         <ErrorText>{error}</ErrorText>
-        <Button type="submit" loading={saving}>
-          Kaydet
-        </Button>
       </form>
     </div>
   );

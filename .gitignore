@@ -26,6 +26,9 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# mcp (admin token içerir — repoya girmemeli)
+.mcp.json
+
 # vercel
 .vercel
 

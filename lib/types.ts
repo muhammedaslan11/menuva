@@ -1,4 +1,4 @@
-import type { Translations } from "@/lib/i18n";
+import type { Locale, Translations } from "@/lib/i18n";
 
 export type Plan = "ucretsiz" | "baslangic" | "pro" | "isletme";
 export type Template = "liste" | "grid";
@@ -67,6 +67,12 @@ export interface Business {
   wifi_password: string;
   plan: Plan;
   is_active: boolean;
+  /** İşletmenin ana (baz) dili — ana metinler (name/description) bu dilde tutulur.
+   *  Seçilmemişse Türkçe kabul edilir (bkz. lib/i18n.ts mainLocale). */
+  main_language?: Locale;
+  /** Ana dil dışındaki aktif ek diller. main_language ve languages alanlarının
+   *  ikisi de tanımsızsa (eski kayıt) tüm diller aktif sayılır. */
+  languages?: Locale[];
   translations?: Translations;
   created: string;
   updated: string;
@@ -101,6 +107,7 @@ export interface Category {
   business: string;
   name: string;
   description: string;
+  image_url: string;
   order: number;
   is_active: boolean;
   translations?: Translations;

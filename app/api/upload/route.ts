@@ -4,7 +4,7 @@ import { buildObjectPath, uploadImage, type UploadKind } from "@/lib/minio";
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_KINDS: UploadKind[] = ["logo", "cover", "product", "popup"];
+const ALLOWED_KINDS: UploadKind[] = ["logo", "cover", "product", "popup", "category"];
 
 function isUploadKind(value: string): value is UploadKind {
   return (ALLOWED_KINDS as string[]).includes(value);

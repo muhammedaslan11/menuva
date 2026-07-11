@@ -42,7 +42,7 @@ export function CategoryDrawer({ onClose }: { onClose: () => void }) {
           {categories.map((cat) => {
             const href = `${base}/categories/${cat.id}`;
             const active = pathname === href;
-            const image = imageByCategory.get(cat.id);
+            const image = cat.image_url || imageByCategory.get(cat.id);
             const count = productCountByCategory.get(cat.id) ?? 0;
             return (
               <Link

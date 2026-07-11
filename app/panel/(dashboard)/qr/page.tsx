@@ -42,7 +42,7 @@ export default function QrPage() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={qrDataUrl} alt="Menü QR kodu" className="h-56 w-56" />
           ) : (
-            <div className="h-56 w-56 animate-pulse rounded-lg bg-crema" />
+            <div className="h-56 w-56 animate-pulse rounded-2xl bg-crema" />
           )}
         </Card>
         <Card className="flex flex-col justify-center gap-4">

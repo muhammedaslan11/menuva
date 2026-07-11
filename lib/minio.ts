@@ -16,7 +16,7 @@ export const minioClient = new Client({
 export const MINIO_BUCKET = bucket;
 export const MINIO_PUBLIC_URL = (process.env.MINIO_PUBLIC_URL ?? `${endpoint.origin}/${bucket}`).replace(/\/$/, "");
 
-export type UploadKind = "logo" | "cover" | "product" | "popup";
+export type UploadKind = "logo" | "cover" | "product" | "popup" | "category";
 
 const EXT_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",

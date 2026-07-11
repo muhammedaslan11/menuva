@@ -21,7 +21,7 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   const { className = "", ...rest } = props;
   return (
     <input
-      className={`w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
+      className={`w-full rounded-2xl border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
       {...rest}
     />
   );
@@ -31,7 +31,7 @@ export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const { className = "", ...rest } = props;
   return (
     <textarea
-      className={`w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
+      className={`w-full rounded-2xl border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-soft/50 focus:border-paprika ${className}`}
       {...rest}
     />
   );
@@ -41,7 +41,7 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
   const { className = "", ...rest } = props;
   return (
     <select
-      className={`w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-paprika ${className}`}
+      className={`w-full rounded-2xl border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-paprika ${className}`}
       {...rest}
     />
   );
@@ -54,7 +54,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button({ variant = "primary", loading, className = "", disabled, children, ...rest }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-mono text-[13px] uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+    "inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 font-mono text-[13px] uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-50";
   const variants: Record<string, string> = {
     primary: "bg-ink text-paper hover:bg-paprika",
     outline: "border border-line text-ink hover:border-paprika hover:text-paprika",
@@ -68,8 +68,17 @@ export function Button({ variant = "primary", loading, className = "", disabled,
   );
 }
 
+export function Spinner({ className = "" }: { className?: string }) {
+  return (
+    <svg className={`animate-spin ${className}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
+    </svg>
+  );
+}
+
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-xl border border-line bg-paper p-6 ${className}`}>{children}</div>;
+  return <div className={`rounded-2xl border border-line bg-paper p-6 ${className}`}>{children}</div>;
 }
 
 export function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -84,6 +93,108 @@ export function PageHeader({ title, description, action }: { title: string; desc
   );
 }
 
+// Formların sağ üstüne yerleşen kaydet/vazgeç çubuğu — kullanıcının kaydetmek
+// için sayfayı en alta kaydırması gerekmez.
+export function FormActions({
+  saving,
+  saved,
+  onCancel,
+  saveLabel = "Kaydet",
+  cancelLabel = "Vazgeç",
+}: {
+  saving?: boolean;
+  saved?: boolean;
+  onCancel?: () => void;
+  saveLabel?: string;
+  cancelLabel?: string;
+}) {
+  return (
+    <div className="mb-6 flex items-center gap-3 border-b border-line pb-4">
+      <span className="mr-auto font-mono text-[11px] uppercase tracking-wider text-herb">
+        {saved ? "Kaydedildi ✓" : ""}
+      </span>
+      {onCancel && (
+        <Button type="button" variant="ghost" onClick={onCancel}>
+          {cancelLabel}
+        </Button>
+      )}
+      <Button type="submit" loading={saving}>
+        {saveLabel}
+      </Button>
+    </div>
+  );
+}
+
+// Yatay sekme çubuğu — aktif sekmenin altında vurgu çizgisi (referans görsel gibi).
+export function Tabs<T extends string>({
+  tabs,
+  active,
+  onChange,
+}: {
+  tabs: { key: T; label: string }[];
+  active: T;
+  onChange: (key: T) => void;
+}) {
+  return (
+    <div className="mb-6 flex gap-6 overflow-x-auto border-b border-line">
+      {tabs.map((t) => {
+        const isActive = t.key === active;
+        return (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => onChange(t.key)}
+            className={`relative -mb-px whitespace-nowrap pb-3 pt-1 text-[13px] font-semibold uppercase tracking-wide transition-colors ${
+              isActive ? "text-paprika" : "text-ink-soft hover:text-ink"
+            }`}
+          >
+            {t.label}
+            {isActive && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-paprika" />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Aç/kapa anahtarı (checkbox yerine). Sağda yeşil switch, solda etiket/açıklama.
+export function Switch({
+  checked,
+  onChange,
+  label,
+  description,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  label: string;
+  description?: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <p className="text-sm font-medium text-ink">{label}</p>
+        {description && <p className="mt-0.5 text-xs text-ink-soft">{description}</p>}
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+          checked ? "bg-herb" : "bg-ink/20"
+        }`}
+      >
+        <span
+          className={`inline-block h-5 w-5 transform rounded-full bg-paper shadow transition-transform ${
+            checked ? "translate-x-[1.375rem]" : "translate-x-0.5"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
 export function ErrorText({ children }: { children: ReactNode }) {
   if (!children) return null;
   return <p className="mt-2 text-sm text-paprika-deep">{children}</p>;
@@ -91,7 +202,7 @@ export function ErrorText({ children }: { children: ReactNode }) {
 
 export function EmptyState({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-line py-16 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-line py-16 text-center">
       <p className="font-display text-lg font-bold">{title}</p>
       {description && <p className="max-w-sm text-sm text-ink-soft">{description}</p>}
       {action}

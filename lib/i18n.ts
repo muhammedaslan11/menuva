@@ -37,16 +37,53 @@ export interface Translatable {
   translations?: Translations;
 }
 
-// Verilen alanı istenen dilde döndürür; çeviri yoksa veya boşsa Türkçe'ye düşer.
-export function tField(entity: Translatable, field: TranslatableField, locale: Locale): string {
+// Verilen alanı istenen dilde döndürür. Ana metin (name/description) işletmenin
+// ana dilinde tutulur; istenen dil ana dilse doğrudan onu, değilse çeviriyi döner,
+// çeviri yoksa/boşsa ana dile düşer.
+export function tField(
+  entity: Translatable,
+  field: TranslatableField,
+  locale: Locale,
+  baseLocale: Locale = DEFAULT_LOCALE
+): string {
   const base = entity[field] ?? "";
-  if (locale === DEFAULT_LOCALE) return base;
+  if (locale === baseLocale) return base;
   const translated = entity.translations?.[locale]?.[field];
   return translated && translated.trim() !== "" ? translated : base;
 }
 
 export function isSupportedLocale(value: string | null | undefined): value is Locale {
   return !!value && (SUPPORTED_LOCALES as readonly string[]).includes(value);
+}
+
+// Bir işletmenin dil ayarını temsil eden minimal şekil.
+export interface LangConfig {
+  main_language?: Locale | null;
+  languages?: Locale[] | null;
+}
+
+// İşletmenin ana (baz) dili. Ana metinler bu dilde tutulur. Seçilmemişse Türkçe.
+export function mainLocale(config: LangConfig): Locale {
+  return isSupportedLocale(config.main_language) ? config.main_language : DEFAULT_LOCALE;
+}
+
+// İşletmenin aktif dilleri; ana dil her zaman ilk sıradadır ve kapatılamaz,
+// ek diller `languages` seçiminden gelir. Ne ana dil ne de `languages` alanı
+// tanımlı değilse (eski kayıt / PB şemasına alanlar eklenmeden önce) tüm diller
+// aktif sayılır ki mevcut davranış bozulmasın.
+export function activeLocales(config: LangConfig): Locale[] {
+  const main = mainLocale(config);
+  if (config.main_language == null && config.languages == null) {
+    return [main, ...SUPPORTED_LOCALES.filter((l) => l !== main)];
+  }
+  const extras = new Set((config.languages ?? []).filter(isSupportedLocale));
+  return [main, ...SUPPORTED_LOCALES.filter((l) => l !== main && extras.has(l))];
+}
+
+// Çeviri girişinde kullanılan, ana dil dışındaki aktif diller.
+export function activeNonMainLocales(config: LangConfig): Locale[] {
+  const main = mainLocale(config);
+  return activeLocales(config).filter((l) => l !== main);
 }
 
 const LOCALE_STORAGE_KEY = "menuva-locale";

@@ -21,7 +21,7 @@ export default function MenuCategoriesPage() {
       <CategoryTabs />
       <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3">
         {categories.map((cat) => {
-          const image = imageByCategory.get(cat.id);
+          const image = cat.image_url || imageByCategory.get(cat.id);
           const count = productCountByCategory.get(cat.id) ?? 0;
           const name = tf(cat, "name");
           return (

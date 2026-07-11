@@ -68,7 +68,7 @@ export default function AnnouncementsPage() {
             <div className="flex items-center gap-4">
               {p.image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                <img src={p.image_url} alt="" className="h-12 w-12 rounded-2xl object-cover" />
               )}
               <div>
                 <p className="font-display font-bold">

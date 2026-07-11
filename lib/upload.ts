@@ -1,6 +1,6 @@
 import { pb } from "@/lib/pocketbase";
 
-export type UploadKind = "logo" | "cover" | "product" | "popup";
+export type UploadKind = "logo" | "cover" | "product" | "popup" | "category";
 
 export async function uploadFile(file: File, businessId: string, kind: UploadKind): Promise<string> {
   const form = new FormData();

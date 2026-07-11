@@ -200,6 +200,10 @@ async function main() {
       text("wifi_password", { max: 60 }),
       select("plan", ["ucretsiz", "baslangic", "pro", "isletme"], { maxSelect: 1 }),
       boolField("is_active"),
+      // İşletmenin ana (baz) dili — ana metinler bu dilde tutulur.
+      select("main_language", ["tr", "en", "ar", "ru"], { maxSelect: 1 }),
+      // Ana dil dışındaki aktif ek diller.
+      select("languages", ["tr", "en", "ar", "ru"], { maxSelect: 3 }),
       json("translations"),
       ...stamps(),
     ],
@@ -219,6 +223,7 @@ async function main() {
       relation("business", businesses.id, { required: true, cascadeDelete: true, maxSelect: 1 }),
       text("name", { required: true, max: 120 }),
       text("description", { max: 300 }),
+      text("image_url", { max: 500 }),
       num("order", { onlyInt: true }),
       boolField("is_active"),
       json("translations"),

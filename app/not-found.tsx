@@ -18,13 +18,13 @@ export default function NotFound() {
       <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
         <Link
           href="/"
-          className="rounded-full bg-paprika px-7 py-3.5 font-mono text-[13px] uppercase tracking-wider text-paper transition-colors hover:bg-paprika-deep"
+          className="rounded-2xl bg-paprika px-7 py-3.5 font-mono text-[13px] uppercase tracking-wider text-paper transition-colors hover:bg-paprika-deep"
         >
           Ana sayfa
         </Link>
         <Link
           href="/panel"
-          className="rounded-full border border-ink px-7 py-3.5 font-mono text-[13px] uppercase tracking-wider text-ink transition-colors hover:bg-ink hover:text-paper"
+          className="rounded-2xl border border-ink px-7 py-3.5 font-mono text-[13px] uppercase tracking-wider text-ink transition-colors hover:bg-ink hover:text-paper"
         >
           Panele git
         </Link>

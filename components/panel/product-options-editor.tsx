@@ -88,7 +88,7 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
 
       <div className="space-y-2">
         {options.map((opt) => (
-          <div key={opt.id} className="flex items-center justify-between rounded-lg border border-line px-4 py-2.5 text-sm">
+          <div key={opt.id} className="flex items-center justify-between rounded-2xl border border-line px-4 py-2.5 text-sm">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">{opt.group_name}</span>
               <p className="font-medium">
@@ -112,7 +112,7 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
       </div>
 
       {editingId !== null && (
-        <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-line bg-crema/30 p-4">
+        <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-line bg-crema/30 p-4">
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Label htmlFor="opt-group">Grup</Label>

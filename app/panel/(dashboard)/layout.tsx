@@ -102,7 +102,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors ${active
+                    className={`flex items-center gap-2.5 rounded-2xl px-3 py-2.5 text-sm transition-colors ${active
                         ? "bg-paprika/10 font-semibold text-paprika"
                         : "text-ink-soft hover:bg-crema/70 hover:text-ink"
                       }`}
