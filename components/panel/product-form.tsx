@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { pb } from "@/lib/pocketbase";
 import { allergenLabels, badgeLabels } from "@/lib/labels";
-import { Card, ErrorText, FormActions, Input, Label, Select, Switch } from "@/components/panel/ui";
+import { Card, ErrorText, FormActions, Input, Label, Select } from "@/components/panel/ui";
 import { ImageUploader } from "@/components/panel/image-uploader";
 import { MultiLangFields } from "@/components/panel/multi-lang-fields";
 import { activeLocales, mainLocale, type TranslatableField, type Translations } from "@/lib/i18n";
@@ -89,19 +89,21 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <FormActions saving={saving} onCancel={onCancel} />
+      <FormActions
+        saving={saving}
+        onCancel={onCancel}
+        toggle={{ checked: isAvailable, onChange: setIsAvailable, label: "Satışta" }}
+      />
       <ErrorText>{error}</ErrorText>
 
       <Card className="space-y-5">
-        {/* Resim en üstte */}
-        <div>
+        {/* Üstte solda kare görsel */}
+        <div className="w-32">
           <Label>Ürün görseli</Label>
-          <div className="max-w-[220px]">
-            <ImageUploader value={image} onChange={setImage} businessId={business.id} kind="product" aspect="aspect-square" />
-          </div>
+          <ImageUploader value={image} onChange={setImage} businessId={business.id} kind="product" aspect="aspect-square" />
         </div>
 
-        {/* Dil sekmeleri — ana dil ilk sırada ve açık */}
+        {/* Altında dil sekmeleri — ana dil ilk sırada ve açık */}
         <MultiLangFields
           locales={activeLocales(business)}
           mainLocale={mainLocale(business)}
@@ -130,15 +132,6 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
             <Label htmlFor="p-price">Fiyat (₺)</Label>
             <Input id="p-price" type="number" min={0} step="0.01" required value={price} onChange={(e) => setPrice(e.target.value)} />
           </div>
-        </div>
-
-        <div className="border-t border-line pt-4">
-          <Switch
-            checked={isAvailable}
-            onChange={setIsAvailable}
-            label="Satışta"
-            description="Kapalıysa ürün stokta yok olarak işaretlenir ve menüde gösterilmez."
-          />
         </div>
       </Card>
 

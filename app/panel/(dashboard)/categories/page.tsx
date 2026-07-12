@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type DragEvent } from "react";
 import Link from "next/link";
 import { pb } from "@/lib/pocketbase";
 import { useBusiness } from "@/components/panel/business-context";
 import { Button, Card, EmptyState, PageHeader } from "@/components/panel/ui";
+import { GripIcon } from "@/components/icons";
 import type { Category } from "@/lib/types";
 
 export default function CategoriesPage() {
   const { business, isLoading: businessLoading } = useBusiness();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!business) return;
@@ -34,12 +37,30 @@ export default function CategoriesPage() {
     await load();
   }
 
-  async function move(index: number, direction: -1 | 1) {
-    const target = index + direction;
-    if (target < 0 || target >= categories.length) return;
+  function handleDragStart(index: number) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e: DragEvent, index: number) {
+    e.preventDefault();
+    if (index !== overIndex) setOverIndex(index);
+  }
+
+  function handleDragEnd() {
+    setDragIndex(null);
+    setOverIndex(null);
+  }
+
+  async function handleDrop(index: number) {
+    if (dragIndex === null || dragIndex === index) {
+      handleDragEnd();
+      return;
+    }
     const next = [...categories];
-    [next[index], next[target]] = [next[target], next[index]];
+    const [moved] = next.splice(dragIndex, 1);
+    next.splice(index, 0, moved);
     setCategories(next);
+    handleDragEnd();
     await Promise.all(next.map((c, i) => pb.collection("categories").update(c.id, { order: i })));
   }
 
@@ -51,7 +72,7 @@ export default function CategoriesPage() {
     <div>
       <PageHeader
         title="Kategoriler"
-        description="Menünü bölümlere ayır: Kahvaltı, Ana Yemek, Tatlılar…"
+        description="Menünü bölümlere ayır: Kahvaltı, Ana Yemek, Tatlılar… Sırayı değiştirmek için tutup sürükle."
         action={
           <Link href="/panel/categories/new">
             <Button>+ Yeni kategori</Button>
@@ -73,26 +94,24 @@ export default function CategoriesPage() {
 
       <div className="space-y-3">
         {categories.map((cat, i) => (
-          <Card key={cat.id} className="flex items-center justify-between gap-4">
+          <Card
+            key={cat.id}
+            draggable
+            onDragStart={() => handleDragStart(i)}
+            onDragOver={(e) => handleDragOver(e, i)}
+            onDrop={() => handleDrop(i)}
+            onDragEnd={handleDragEnd}
+            className={`flex items-center justify-between gap-4 transition-colors ${
+              dragIndex === i ? "opacity-40" : ""
+            } ${overIndex === i && dragIndex !== null && dragIndex !== i ? "border-paprika" : ""}`}
+          >
             <div className="flex items-center gap-3">
-              <div className="flex flex-col">
-                <button
-                  aria-label="Yukarı taşı"
-                  onClick={() => move(i, -1)}
-                  disabled={i === 0}
-                  className="text-ink-soft hover:text-paprika disabled:opacity-20"
-                >
-                  ▲
-                </button>
-                <button
-                  aria-label="Aşağı taşı"
-                  onClick={() => move(i, 1)}
-                  disabled={i === categories.length - 1}
-                  className="text-ink-soft hover:text-paprika disabled:opacity-20"
-                >
-                  ▼
-                </button>
-              </div>
+              <span
+                className="cursor-grab text-ink-soft/60 transition-colors hover:text-ink-soft active:cursor-grabbing"
+                aria-hidden="true"
+              >
+                <GripIcon size={20} />
+              </span>
               <div>
                 <p className="font-display text-lg font-bold">
                   {cat.name}

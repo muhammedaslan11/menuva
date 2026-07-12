@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { pb } from "@/lib/pocketbase";
-import { Card, ErrorText, FormActions, Input, Label, Switch, Textarea } from "@/components/panel/ui";
+import { Card, ErrorText, FormActions, Input, Label, Textarea } from "@/components/panel/ui";
 import { ImageUploader } from "@/components/panel/image-uploader";
 import type { Business, Popup } from "@/lib/types";
 
@@ -50,15 +50,17 @@ export function PopupForm({
   return (
     <Card>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormActions saving={saving} onCancel={onCancel} />
+        <FormActions
+          saving={saving}
+          onCancel={onCancel}
+          toggle={{ checked: isActive, onChange: setIsActive, label: "Aktif" }}
+        />
         <ErrorText>{error}</ErrorText>
 
-        {/* Resim en üstte */}
-        <div>
+        {/* Üstte solda kare görsel */}
+        <div className="w-32">
           <Label>Görsel (opsiyonel)</Label>
-          <div className="max-w-[200px]">
-            <ImageUploader value={imageUrl} onChange={setImageUrl} businessId={business.id} kind="popup" aspect="aspect-square" />
-          </div>
+          <ImageUploader value={imageUrl} onChange={setImageUrl} businessId={business.id} kind="popup" aspect="aspect-square" />
         </div>
         <div>
           <Label htmlFor="pop-title">Başlık</Label>
@@ -67,9 +69,6 @@ export function PopupForm({
         <div>
           <Label htmlFor="pop-message">Mesaj</Label>
           <Textarea id="pop-message" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
-        </div>
-        <div className="border-t border-line pt-4">
-          <Switch checked={isActive} onChange={setIsActive} label="Aktif" description="Kapalıysa duyuru müşteri menüsünde gösterilmez." />
         </div>
       </form>
     </Card>

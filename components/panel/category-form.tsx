@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { pb } from "@/lib/pocketbase";
-import { Card, ErrorText, FormActions, Label, Switch } from "@/components/panel/ui";
+import { Card, ErrorText, FormActions, Label } from "@/components/panel/ui";
 import { ImageUploader } from "@/components/panel/image-uploader";
 import { MultiLangFields } from "@/components/panel/multi-lang-fields";
 import { activeLocales, mainLocale, type TranslatableField, type Translations } from "@/lib/i18n";
@@ -54,16 +54,20 @@ export function CategoryForm({
   return (
     <Card>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <FormActions saving={saving} onCancel={onCancel} />
+        <FormActions
+          saving={saving}
+          onCancel={onCancel}
+          toggle={{ checked: isActive, onChange: setIsActive, label: "Menüde Göster" }}
+        />
         <ErrorText>{error}</ErrorText>
 
-        {/* Resim en üstte */}
-        <div>
+        {/* Üstte solda kare görsel */}
+        <div className="w-32">
           <Label>Kategori görseli</Label>
-          <ImageUploader value={imageUrl} onChange={setImageUrl} businessId={business.id} kind="category" aspect="aspect-[3/1]" />
+          <ImageUploader value={imageUrl} onChange={setImageUrl} businessId={business.id} kind="category" aspect="aspect-square" />
         </div>
 
-        {/* Dil sekmeleri — ana dil ilk sırada ve açık */}
+        {/* Altında dil sekmeleri — ana dil ilk sırada ve açık */}
         <MultiLangFields
           locales={activeLocales(business)}
           mainLocale={mainLocale(business)}
@@ -76,10 +80,6 @@ export function CategoryForm({
             { key: "description", label: "Açıklama", multiline: true },
           ]}
         />
-
-        <div className="border-t border-line pt-4">
-          <Switch checked={isActive} onChange={setIsActive} label="Menüde görünsün" description="Kapalıysa kategori müşteri menüsünde gizlenir." />
-        </div>
       </form>
     </Card>
   );

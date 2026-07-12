@@ -1,5 +1,6 @@
 import type {
   ButtonHTMLAttributes,
+  HTMLAttributes,
   InputHTMLAttributes,
   LabelHTMLAttributes,
   ReactNode,
@@ -77,8 +78,12 @@ export function Spinner({ className = "" }: { className?: string }) {
   );
 }
 
-export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-line bg-paper p-6 ${className}`}>{children}</div>;
+export function Card({ children, className = "", ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`rounded-2xl border border-line bg-paper p-6 ${className}`} {...rest}>
+      {children}
+    </div>
+  );
 }
 
 export function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -94,25 +99,29 @@ export function PageHeader({ title, description, action }: { title: string; desc
 }
 
 // Formların sağ üstüne yerleşen kaydet/vazgeç çubuğu — kullanıcının kaydetmek
-// için sayfayı en alta kaydırması gerekmez.
+// için sayfayı en alta kaydırması gerekmez. `toggle` verilirse (ör. "Menüde
+// Göster") kaydet butonunun hemen soluna kompakt bir switch olarak eklenir.
 export function FormActions({
   saving,
   saved,
   onCancel,
   saveLabel = "Kaydet",
   cancelLabel = "Vazgeç",
+  toggle,
 }: {
   saving?: boolean;
   saved?: boolean;
   onCancel?: () => void;
   saveLabel?: string;
   cancelLabel?: string;
+  toggle?: { checked: boolean; onChange: (checked: boolean) => void; label: string };
 }) {
   return (
     <div className="mb-6 flex items-center gap-3 border-b border-line pb-4">
       <span className="mr-auto font-mono text-[11px] uppercase tracking-wider text-herb">
         {saved ? "Kaydedildi ✓" : ""}
       </span>
+      {toggle && <Switch compact checked={toggle.checked} onChange={toggle.onChange} label={toggle.label} />}
       {onCancel && (
         <Button type="button" variant="ghost" onClick={onCancel}>
           {cancelLabel}
@@ -158,17 +167,45 @@ export function Tabs<T extends string>({
 }
 
 // Aç/kapa anahtarı (checkbox yerine). Sağda yeşil switch, solda etiket/açıklama.
+// `compact` verilirse (ör. FormActions içinde kaydet butonunun yanında)
+// açıklamasız, küçük, tek satırlık hâli kullanılır.
 export function Switch({
   checked,
   onChange,
   label,
   description,
+  compact,
 }: {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
   description?: string;
+  compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <label className="flex shrink-0 cursor-pointer items-center gap-2">
+        <span className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">{label}</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={checked}
+          aria-label={label}
+          onClick={() => onChange(!checked)}
+          className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+            checked ? "bg-herb" : "bg-ink/20"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-paper shadow transition-transform ${
+              checked ? "translate-x-[1.125rem]" : "translate-x-0.5"
+            }`}
+          />
+        </button>
+      </label>
+    );
+  }
+
   return (
     <div className="flex items-center justify-between gap-4">
       <div>

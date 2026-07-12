@@ -34,6 +34,19 @@ export function MenuIcon(p: IconProps) {
   );
 }
 
+export function GripIcon(p: IconProps) {
+  return (
+    <Svg {...p} strokeWidth={0} fill="currentColor">
+      <circle cx="9" cy="6" r="1.5" />
+      <circle cx="15" cy="6" r="1.5" />
+      <circle cx="9" cy="12" r="1.5" />
+      <circle cx="15" cy="12" r="1.5" />
+      <circle cx="9" cy="18" r="1.5" />
+      <circle cx="15" cy="18" r="1.5" />
+    </Svg>
+  );
+}
+
 export function SearchIcon(p: IconProps) {
   return (
     <Svg {...p}>
