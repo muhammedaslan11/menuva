@@ -153,12 +153,11 @@ export function Tabs<T extends string>({
             key={t.key}
             type="button"
             onClick={() => onChange(t.key)}
-            className={`relative -mb-px whitespace-nowrap pb-3 pt-1 text-[13px] font-semibold uppercase tracking-wide transition-colors ${
-              isActive ? "text-paprika" : "text-ink-soft hover:text-ink"
+            className={`relative -mb-px whitespace-nowrap border-b-2 pb-3 pt-1 text-[13px] font-semibold uppercase tracking-wide transition-colors ${
+              isActive ? "border-paprika text-paprika" : "border-transparent text-ink-soft hover:text-ink"
             }`}
           >
             {t.label}
-            {isActive && <span className="absolute inset-x-0 -bottom-px h-0.5 bg-paprika" />}
           </button>
         );
       })}

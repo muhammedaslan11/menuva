@@ -11,7 +11,7 @@ export function CategoryDrawer({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex" onClick={onClose}>
-      <div className="absolute inset-0 bg-ink/60" aria-hidden />
+      <div className="absolute inset-0 bg-black/60" aria-hidden />
       <div
         className="relative flex h-full w-80 max-w-[85vw] flex-col overflow-y-auto bg-paper shadow-xl"
         onClick={(e) => e.stopPropagation()}

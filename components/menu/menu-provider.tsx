@@ -4,13 +4,15 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type C
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { pb } from "@/lib/pocketbase";
-import { pickReadableOn, readableAccent, visibleFill } from "@/lib/color";
+import { isValidHex, pickReadableOn, readableAccent, visibleFill } from "@/lib/color";
 import { getThemeColor } from "@/lib/themes";
+import { getSurface } from "@/lib/surfaces";
 import { getFontStack } from "@/lib/fonts";
-import { lineKey, loadCart, saveCart, unitPriceFor, type CartLine, type CartSelection } from "@/lib/cart";
+import { cartCount, lineKey, loadCart, saveCart, unitPriceFor, type CartLine, type CartSelection } from "@/lib/cart";
 import {
   activeLocales,
   getStoredLocale,
+  hasStoredLocale,
   isRTLLocale,
   localeCodes,
   localeLabels,
@@ -25,10 +27,11 @@ import {
 } from "@/lib/i18n";
 import type { Business, Category, MenuEventType, Popup, Product, ProductOption } from "@/lib/types";
 import { OptionPicker } from "@/components/menu/option-picker";
-import { CartBar, CartDrawer } from "@/components/menu/cart";
+import { CartBar } from "@/components/menu/cart";
 import { PopupModal } from "@/components/menu/popup-modal";
+import { LanguageModal } from "@/components/menu/language-modal";
 import { CategoryDrawer } from "@/components/menu/category-drawer";
-import { ArrowLeftIcon, MenuIcon, MessageIcon, SearchIcon } from "@/components/icons";
+import { ArrowLeftIcon, MenuIcon, SearchIcon, ShoppingBagIcon } from "@/components/icons";
 
 interface MenuContextValue {
   business: Business;
@@ -36,6 +39,8 @@ interface MenuContextValue {
   base: string;
   cartLines: CartLine[];
   addProduct: (product: Product) => void;
+  updateQuantity: (key: string, quantity: number) => void;
+  removeLine: (key: string) => void;
   track: (type: MenuEventType, target: string, label: string) => void;
   locale: Locale;
   setLocale: (locale: Locale) => void;
@@ -165,7 +170,8 @@ function MenuHeader({
 
 function BottomNav({ base }: { base: string }) {
   const pathname = usePathname();
-  const { t } = useMenu();
+  const { t, cartLines } = useMenu();
+  const count = cartCount(cartLines);
 
   const items = [
     {
@@ -177,8 +183,8 @@ function BottomNav({ base }: { base: string }) {
         pathname.startsWith(`${base}/categories`) ||
         pathname.startsWith(`${base}/products`),
     },
-    { href: `${base}/search`, Icon: SearchIcon, label: t("navSearch"), active: pathname.startsWith(`${base}/search`) },
-    { href: `${base}/review`, Icon: MessageIcon, label: t("navReview"), active: pathname.startsWith(`${base}/review`) },
+    { href: `${base}/search`, Icon: SearchIcon, label: t("navSearch"), active: pathname.startsWith(`${base}/search`), badge: 0 },
+    { href: `${base}/cart`, Icon: ShoppingBagIcon, label: t("cartTitle"), active: pathname.startsWith(`${base}/cart`), badge: count },
   ];
 
   return (
@@ -188,10 +194,20 @@ function BottomNav({ base }: { base: string }) {
           <Link
             key={item.href}
             href={item.href}
-            className="flex flex-1 flex-col items-center gap-1 py-2.5 font-mono text-[10px] uppercase tracking-wider text-ink-soft transition-colors"
+            className="relative flex flex-1 flex-col items-center gap-1 py-2.5 font-mono text-[10px] uppercase tracking-wider text-ink-soft transition-colors"
             style={item.active ? { color: "var(--brand-text)" } : undefined}
           >
-            <item.Icon size={22} strokeWidth={item.active ? 2.2 : 1.8} />
+            <span className="relative">
+              <item.Icon size={22} strokeWidth={item.active ? 2.2 : 1.8} />
+              {"badge" in item && item.badge ? (
+                <span
+                  className="absolute -right-2.5 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold leading-none text-[var(--brand-on)]"
+                  style={{ background: "var(--brand)" }}
+                >
+                  {item.badge}
+                </span>
+              ) : null}
+            </span>
             {item.label}
           </Link>
         ))}
@@ -251,10 +267,11 @@ export function MenuProvider({
   children: ReactNode;
 }) {
   const [cart, setCart] = useState<CartLine[]>([]);
-  const [cartOpen, setCartOpen] = useState(false);
   const [pickerProduct, setPickerProduct] = useState<Product | null>(null);
   const [pickerOptions, setPickerOptions] = useState<ProductOption[]>([]);
   const [popupDismissed, setPopupDismissed] = useState(true);
+  // İlk ziyarette (henüz dil seçilmemişken, birden çok dil varsa) dil modalı gösterilir.
+  const [needsLangChoice, setNeedsLangChoice] = useState(false);
   const [locale, setLocaleState] = useState<Locale>(() => mainLocale(business));
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -312,15 +329,22 @@ export function MenuProvider({
   const locales = useMemo(() => activeLocales(business), [business]);
 
   // Ziyaretçinin kayıtlı dili artık aktif değilse (işletme dili kapatmış olabilir)
-  // işletmenin ana diline düş.
+  // işletmenin ana diline düş. İlk ziyarette (kayıtlı dil yoksa ve birden çok
+  // aktif dil varsa) dil seçim modalını aç.
   useEffect(() => {
     const stored = getStoredLocale();
     setLocaleState(locales.includes(stored) ? stored : baseLocale);
+    if (locales.length > 1 && !hasStoredLocale()) setNeedsLangChoice(true);
   }, [locales, baseLocale]);
 
   function setLocale(next: Locale) {
     setLocaleState(next);
     storeLocale(next);
+  }
+
+  function chooseLanguage(next: Locale) {
+    setLocale(next);
+    setNeedsLangChoice(false);
   }
 
   function t(key: UIKey, vars?: Record<string, string | number>) {
@@ -388,18 +412,27 @@ export function MenuProvider({
     persistCart(cart.filter((l) => l.key !== key));
   }
 
-  const brand = getThemeColor(business.theme);
-  const brandFill = visibleFill(brand);
+  // Marka rengi: özel renk (theme_color) doluysa onu, değilse preset temayı kullan.
+  const brand = isValidHex(business.theme_color) ? business.theme_color : getThemeColor(business.theme);
+  // Menü arka planı / yüzey tonu — Tailwind renk token'larını menü kökünde ezer.
+  const surface = getSurface(business.menu_bg);
+  const brandFill = visibleFill(brand, surface.vars.paper);
   // İşletmenin seçtiği font hem gövde hem başlık ailesini değiştirir
   // (font-display/font-body utility'leri bu değişkenleri okur).
   const fontStack = getFontStack(business.font);
   const brandStyle = {
     "--brand": brandFill,
     "--brand-on": pickReadableOn(brandFill),
-    "--brand-text": readableAccent(brand),
+    "--brand-text": readableAccent(brand, surface.vars.paper),
     "--header-h": "4.75rem",
     "--font-body": fontStack,
     "--font-display": fontStack,
+    // Seçilen arka plan tonu: temel renk token'larını menü kapsamında değiştirir.
+    "--color-paper": surface.vars.paper,
+    "--color-crema": surface.vars.crema,
+    "--color-ink": surface.vars.ink,
+    "--color-ink-soft": surface.vars.inkSoft,
+    "--color-line": surface.vars.line,
     fontFamily: fontStack,
   } as CSSProperties;
 
@@ -410,6 +443,8 @@ export function MenuProvider({
         base: basePath,
         cartLines: cart,
         addProduct,
+        updateQuantity,
+        removeLine,
         track,
         locale,
         setLocale,
@@ -430,7 +465,9 @@ export function MenuProvider({
         className="min-h-screen bg-paper pb-24"
       >
         <TrackPageViews business={business} base={basePath} />
-        {popup && !popupDismissed && <PopupModal popup={popup} onClose={dismissPopup} />}
+        {/* İlk açılışta önce dil seçimi; dil modalı kapanınca kampanya popup'ı gösterilir. */}
+        {needsLangChoice && <LanguageModal onPick={chooseLanguage} />}
+        {popup && !popupDismissed && !needsLangChoice && <PopupModal popup={popup} onClose={dismissPopup} />}
         {pickerProduct && (
           <OptionPicker
             product={pickerProduct}
@@ -447,10 +484,7 @@ export function MenuProvider({
         {drawerOpen && <CategoryDrawer onClose={() => setDrawerOpen(false)} />}
         <main className="mx-auto max-w-3xl">{children}</main>
 
-        <CartBar lines={cart} onOpen={() => setCartOpen(true)} />
-        {cartOpen && (
-          <CartDrawer lines={cart} onClose={() => setCartOpen(false)} onUpdateQuantity={updateQuantity} onRemove={removeLine} />
-        )}
+        <CartBar lines={cart} base={basePath} />
         <BottomNav base={basePath} />
       </div>
     </MenuContext.Provider>

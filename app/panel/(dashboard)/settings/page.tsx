@@ -7,12 +7,16 @@ import { useBusiness } from "@/components/panel/business-context";
 import { uploadFile, type UploadKind } from "@/lib/upload";
 import { isReservedSlug, slugify } from "@/lib/slug";
 import { themes } from "@/lib/themes";
+import { surfaces, DEFAULT_SURFACE } from "@/lib/surfaces";
+import { isValidHex } from "@/lib/color";
 import { fonts, DEFAULT_FONT, getFontStack } from "@/lib/fonts";
 import { ROOT_DOMAIN } from "@/lib/site";
 import { highlightLabels } from "@/lib/labels";
 import { HighlightIcon } from "@/components/icons";
 import { Card, ErrorText, FormActions, Input, Label, PageHeader, Select, Spinner, Tabs, Textarea } from "@/components/panel/ui";
 import { MultiLangFields } from "@/components/panel/multi-lang-fields";
+import { useToast } from "@/components/panel/toast";
+import { StarIcon } from "@/components/icons";
 import {
   activeNonMainLocales,
   localeCodes,
@@ -159,8 +163,10 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
   const [googleReviewUrl, setGoogleReviewUrl] = useState(business.google_review_url);
   const [wifiPassword, setWifiPassword] = useState(business.wifi_password);
   const [theme, setTheme] = useState(business.theme || "paprika");
+  const [themeColor, setThemeColor] = useState(business.theme_color || "");
+  const [menuBg, setMenuBg] = useState(business.menu_bg || DEFAULT_SURFACE);
   const [font, setFont] = useState(business.font || DEFAULT_FONT);
-  const [template, setTemplate] = useState<Template>(business.template || "liste");
+  const template: Template = "liste";
   const [logoUrl, setLogoUrl] = useState(business.logo_url);
   const [coverUrl, setCoverUrl] = useState(business.cover_url);
   const [mainLang, setMainLang] = useState<Locale>(mainLocale(business));
@@ -171,6 +177,7 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const { toast } = useToast();
 
   // Ana dili değiştirince, o dil ek diller listesinden çıkarılır.
   function changeMainLang(next: Locale) {
@@ -217,6 +224,8 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
         google_review_url: googleReviewUrl,
         wifi_password: wifiPassword,
         theme,
+        theme_color: isValidHex(themeColor) ? themeColor : "",
+        menu_bg: menuBg,
         font,
         template,
         logo_url: logoUrl,
@@ -227,24 +236,30 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
       });
       onSaved(updated);
       setSavedAt(Date.now());
+      toast("Ayarlar kaydedildi");
     } catch (err) {
       if (err instanceof ClientResponseError && err.response?.data?.slug) {
         setError("Bu adres başka bir işletme tarafından kullanılıyor.");
+        toast("Bu adres başka bir işletme tarafından kullanılıyor.", "error");
       } else {
         setError("Kaydedilemedi, tekrar dene.");
+        toast("Kaydedilemedi, tekrar dene.", "error");
       }
     } finally {
       setSaving(false);
     }
   }
 
+  // Tema önizlemesi için etkin değerler
+  const brandIsCustom = isValidHex(themeColor);
+  const brandPreview = brandIsCustom ? themeColor : themes[theme as keyof typeof themes]?.color ?? themes.paprika.color;
+  const surfacePreview = surfaces[menuBg as keyof typeof surfaces] ?? surfaces[DEFAULT_SURFACE];
+
   const registeredAt = new Date(business.created).toLocaleDateString("tr-TR", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
-
-  const extraOptions = SUPPORTED_LOCALES.filter((l) => l !== mainLang);
 
   return (
     <div>
@@ -318,44 +333,59 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
           <div>
             <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Menü dilleri</p>
             <p className="mt-1 text-xs text-ink-soft">
-              Ana dil, metinlerin girildiği baz dildir. Ek diller için ürün/kategori/açıklama çevirilerini girebilirsin;
-              müşteri menüsünde dil seçimi bu dillerle sınırlanır.
+              Yıldız o dili ana dil yapar (metinlerin girildiği baz dildir); switch dili menüde aktif/pasif eder.
+              Ana dil her zaman aktiftir.
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="b-mainlang">Ana dil</Label>
-              <Select id="b-mainlang" value={mainLang} onChange={(e) => changeMainLang(e.target.value as Locale)}>
-                {SUPPORTED_LOCALES.map((l) => (
-                  <option key={l} value={l}>
-                    {localeLabels[l]}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-          <div>
-            <Label>Ek diller</Label>
-            <div className="flex flex-wrap gap-2">
-              {extraOptions.map((l) => {
-                const selected = languages.includes(l);
-                return (
-                  <button
-                    type="button"
-                    key={l}
-                    onClick={() => toggleLanguage(l)}
-                    className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                      selected
-                        ? "border-paprika bg-paprika text-paper"
-                        : "border-line text-ink-soft hover:border-paprika hover:text-paprika"
-                    }`}
-                  >
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider">{localeCodes[l]}</span>
-                    {localeLabels[l]}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {SUPPORTED_LOCALES.map((l) => {
+              const isMain = l === mainLang;
+              const isActive = isMain || languages.includes(l);
+              return (
+                <div
+                  key={l}
+                  className={`rounded-2xl border p-4 transition-colors ${isMain ? "border-paprika bg-paprika/5" : "border-line"}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => changeMainLang(l)}
+                      disabled={isMain || !isActive}
+                      title="Ana dil yap"
+                      aria-label={`${localeLabels[l]} dilini ana dil yap`}
+                      className={`transition-colors ${
+                        isMain
+                          ? "text-paprika"
+                          : isActive
+                            ? "text-ink-soft/50 hover:text-paprika"
+                            : "cursor-not-allowed text-ink-soft/20"
+                      }`}
+                    >
+                      <StarIcon filled={isMain} size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isActive}
+                      aria-label={`${localeLabels[l]} aktif`}
+                      disabled={isMain}
+                      onClick={() => toggleLanguage(l)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                        isActive ? "bg-herb" : "bg-ink/20"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-paper shadow transition-transform ${
+                          isActive ? "translate-x-[1.125rem]" : "translate-x-0.5"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="mt-3 font-mono text-[11px] font-bold uppercase tracking-wider text-ink-soft">{localeCodes[l]}</p>
+                  <p className="text-sm font-semibold text-ink">{localeLabels[l]}</p>
+                </div>
+              );
+            })}
           </div>
           <p className="text-xs text-ink-soft">
             Açıklama çevirilerini &ldquo;Genel bilgiler&rdquo; sekmesindeki dil sekmelerinden girebilirsin.
@@ -364,51 +394,169 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
         )}
 
         {tab === "tema" && (
-        <Card className="space-y-4">
-          <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Tema</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="b-theme">Tema rengi</Label>
-              <Select id="b-theme" value={theme} onChange={(e) => setTheme(e.target.value)}>
-                {Object.entries(themes).map(([key, { name }]) => (
-                  <option key={key} value={key}>
-                    {name}
-                  </option>
-                ))}
-              </Select>
-              <div className="mt-3 flex items-center gap-3 rounded-2xl border border-line p-3">
-                <div
-                  className="h-8 w-8 rounded-full border-2 border-white shadow-md"
-                  style={{ backgroundColor: themes[theme as keyof typeof themes]?.color || themes.paprika.color }}
-                />
-                <span className="font-mono text-sm uppercase tracking-wider text-ink-soft">
-                  {themes[theme as keyof typeof themes]?.name || "Paprika"}
+        <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+          <div className="space-y-6">
+            {/* Marka rengi */}
+            <Card className="space-y-3">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Marka rengi</p>
+              <div className="flex flex-wrap gap-2.5">
+                {Object.entries(themes).map(([key, { name, color }]) => {
+                  const active = !brandIsCustom && theme === key;
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      title={name}
+                      aria-label={name}
+                      onClick={() => {
+                        setTheme(key);
+                        setThemeColor("");
+                      }}
+                      className={`h-9 w-9 rounded-full border-2 shadow-sm transition-transform hover:scale-110 ${
+                        active ? "border-ink ring-2 ring-ink/20" : "border-white"
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-3 rounded-2xl border border-line p-3">
+                <label
+                  className={`relative h-9 w-9 shrink-0 overflow-hidden rounded-full border-2 shadow-sm ${
+                    brandIsCustom ? "border-ink ring-2 ring-ink/20" : "border-white"
+                  }`}
+                  style={{ backgroundColor: brandIsCustom ? themeColor : "#ffffff" }}
+                  title="Özel renk seç"
+                >
+                  <input
+                    type="color"
+                    value={brandIsCustom ? themeColor : brandPreview}
+                    onChange={(e) => setThemeColor(e.target.value)}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  />
+                  {!brandIsCustom && <span className="absolute inset-0 flex items-center justify-center text-lg text-ink-soft">+</span>}
+                </label>
+                <div className="min-w-0 flex-1">
+                  <Label htmlFor="b-theme-hex" className="mb-1">Özel renk (hex)</Label>
+                  <Input
+                    id="b-theme-hex"
+                    value={themeColor}
+                    onChange={(e) => setThemeColor(e.target.value)}
+                    placeholder="#e8491f"
+                    className="font-mono"
+                  />
+                </div>
+                {brandIsCustom && (
+                  <button
+                    type="button"
+                    onClick={() => setThemeColor("")}
+                    className="font-mono text-[11px] uppercase tracking-wider text-ink-soft transition-colors hover:text-paprika"
+                  >
+                    Sıfırla
+                  </button>
+                )}
+              </div>
+            </Card>
+
+            {/* Arka plan */}
+            <Card className="space-y-3">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Menü arka planı</p>
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                {Object.entries(surfaces).map(([key, s]) => {
+                  const active = menuBg === key;
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => setMenuBg(key)}
+                      className={`flex items-center gap-2.5 rounded-xl border-2 p-2.5 text-left transition-colors ${
+                        active ? "border-paprika" : "border-line hover:border-paprika/50"
+                      }`}
+                    >
+                      <span
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-black/10"
+                        style={{ background: s.swatch[0] }}
+                      >
+                        <span className="h-3.5 w-3.5 rounded-full" style={{ background: s.swatch[2] }} />
+                      </span>
+                      <span className="text-sm font-medium">{s.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* Yazı tipi */}
+            <Card className="space-y-3">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Yazı tipi</p>
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                {Object.entries(fonts).map(([key, f]) => {
+                  const active = font === key;
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      onClick={() => setFont(key)}
+                      style={{ fontFamily: f.stack }}
+                      className={`rounded-xl border-2 p-3 text-left transition-colors ${
+                        active ? "border-paprika" : "border-line hover:border-paprika/50"
+                      }`}
+                    >
+                      <span className="block text-lg font-bold leading-tight">Ag</span>
+                      <span className="mt-0.5 block truncate text-xs text-ink-soft">{f.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+          </div>
+
+          {/* Canlı önizleme */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <p className="mb-2 font-mono text-[11px] uppercase tracking-wider text-ink-soft">Önizleme</p>
+            <div
+              className="overflow-hidden rounded-3xl border shadow-lg"
+              style={{
+                background: surfacePreview.vars.paper,
+                color: surfacePreview.vars.ink,
+                borderColor: surfacePreview.vars.line,
+                fontFamily: getFontStack(font),
+              }}
+            >
+              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${surfacePreview.vars.line}` }}>
+                <span className="text-sm font-bold">{name || "İşletmen"}</span>
+                <span
+                  className="flex h-7 w-7 items-center justify-center rounded-full font-mono text-[10px] font-bold"
+                  style={{ background: brandPreview, color: "#fff" }}
+                >
+                  TR
                 </span>
               </div>
-            </div>
-            <div>
-              <Label htmlFor="b-template">Görünüm şablonu</Label>
-              <Select id="b-template" value={template} onChange={(e) => setTemplate(e.target.value as Template)}>
-                <option value="liste">Liste</option>
-                <option value="grid">Grid / Kart</option>
-              </Select>
-            </div>
-            <div className="sm:col-span-2">
-              <Label htmlFor="b-font">Yazı tipi</Label>
-              <Select id="b-font" value={font} onChange={(e) => setFont(e.target.value)}>
-                {Object.entries(fonts).map(([key, { name }]) => (
-                  <option key={key} value={key}>
-                    {name}
-                  </option>
-                ))}
-              </Select>
-              <div className="mt-3 rounded-2xl border border-line p-3" style={{ fontFamily: getFontStack(font) }}>
-                <p className="text-base font-bold">Izgara Köfte — 285₺</p>
-                <p className="text-sm text-ink-soft">Menünüz bu yazı tipiyle görünür.</p>
+              <div className="space-y-3 p-4">
+                <div>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-bold">Izgara Köfte</span>
+                    <span className="font-mono text-sm font-bold" style={{ color: brandPreview }}>285₺</span>
+                  </div>
+                  <p className="mt-0.5 text-xs" style={{ color: surfacePreview.vars.inkSoft }}>
+                    El yapımı, közlenmiş biber ve pilav ile
+                  </p>
+                </div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-bold">Sezar Salata</span>
+                  <span className="font-mono text-sm font-bold" style={{ color: brandPreview }}>190₺</span>
+                </div>
+                <button
+                  type="button"
+                  className="mt-1 w-full rounded-full py-2.5 text-center font-mono text-[12px] uppercase tracking-wider"
+                  style={{ background: brandPreview, color: "#fff" }}
+                >
+                  + Sepete ekle
+                </button>
               </div>
             </div>
           </div>
-        </Card>
+        </div>
         )}
 
         {tab === "ozellik" && (
@@ -427,7 +575,7 @@ function SettingsForm({ business, onSaved }: { business: Business; onSaved: (b: 
                   key={h}
                   disabled={disabled}
                   onClick={() => toggleHighlight(h)}
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors ${
                     selected
                       ? "border-paprika bg-paprika text-paper"
                       : "border-line text-ink-soft hover:border-paprika hover:text-paprika disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-line disabled:hover:text-ink-soft"

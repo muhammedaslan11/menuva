@@ -33,8 +33,8 @@ export function OptionPicker({
 
   const selections: CartSelection[] = Object.values(selected).map((opt) => ({
     optionId: opt.id,
-    groupName: opt.group_name,
-    name: opt.name,
+    groupName: tf(opt, "group_name"),
+    name: tf(opt, "name"),
     priceDelta: opt.price_delta,
   }));
 
@@ -42,7 +42,7 @@ export function OptionPicker({
   const unitPrice = basePrice + selections.reduce((sum, s) => sum + s.priceDelta, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 sm:items-center sm:p-5" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-5" onClick={onClose}>
       <div
         className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-paper p-6 sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -51,7 +51,9 @@ export function OptionPicker({
         <div className="mt-5 space-y-5">
           {groups.map(([groupName, groupOptions]) => (
             <div key={groupName}>
-              <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">{groupName}</p>
+              <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">
+                {tf(groupOptions[0], "group_name")}
+              </p>
               <div className="mt-2 space-y-2">
                 {groupOptions.map((opt) => (
                   <label
@@ -65,7 +67,7 @@ export function OptionPicker({
                         checked={selected[groupName]?.id === opt.id}
                         onChange={() => setSelected((prev) => ({ ...prev, [groupName]: opt }))}
                       />
-                      {opt.name}
+                      {tf(opt, "name")}
                     </span>
                     <span className="font-mono text-ink-soft">
                       {opt.price_delta >= 0 ? "+" : ""}

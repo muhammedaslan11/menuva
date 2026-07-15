@@ -50,7 +50,11 @@ export interface Business {
   logo_url: string;
   cover_url: string;
   theme: string;
-  /** lib/fonts.ts'teki FontKey — PB şemasına "font" (text) alanı eklenene kadar boş gelir. */
+  /** Özel marka rengi (hex). Doluysa preset `theme` yerine bu kullanılır. */
+  theme_color?: string;
+  /** lib/surfaces.ts'teki SurfaceKey — menü arka planı/yüzey tonu. Boşsa "paper". */
+  menu_bg?: string;
+  /** lib/fonts.ts'teki FontKey — menü yazı tipi. Boşsa varsayılan (figtree). */
   font?: string;
   template: Template;
   phone: string;
@@ -147,6 +151,7 @@ export interface ProductOption {
   name: string;
   price_delta: number;
   order: number;
+  translations?: Translations;
   created: string;
   updated: string;
 }
@@ -160,6 +165,7 @@ export interface Popup {
   is_active: boolean;
   starts_at: string;
   ends_at: string;
+  translations?: Translations;
   created: string;
   updated: string;
 }

@@ -2,17 +2,23 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { pb } from "@/lib/pocketbase";
+import { useToast } from "@/components/panel/toast";
 import { Button, Card, Input, Label } from "@/components/panel/ui";
-import type { ProductOption } from "@/lib/types";
+import { MultiLangFields } from "@/components/panel/multi-lang-fields";
+import { activeLocales, mainLocale, tField, type TranslatableField, type Translations } from "@/lib/i18n";
+import type { Business, ProductOption } from "@/lib/types";
 
-const emptyForm = { groupName: "", name: "", priceDelta: "" };
+const emptyForm = { groupName: "", name: "", priceDelta: "", translations: {} as Translations };
 
-export function ProductOptionsEditor({ productId }: { productId: string }) {
+export function ProductOptionsEditor({ business, productId }: { business: Business; productId: string }) {
   const [options, setOptions] = useState<ProductOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+
+  const main = mainLocale(business);
 
   useEffect(() => {
     load();
@@ -30,12 +36,22 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
 
   function startEdit(option: ProductOption) {
     setEditingId(option.id);
-    setForm({ groupName: option.group_name, name: option.name, priceDelta: option.price_delta.toString() });
+    setForm({
+      groupName: option.group_name,
+      name: option.name,
+      priceDelta: option.price_delta.toString(),
+      translations: option.translations ?? {},
+    });
   }
 
   function startAdd() {
     setEditingId("new");
     setForm(emptyForm);
+  }
+
+  function setBaseField(field: TranslatableField, value: string) {
+    if (field === "group_name") setForm((f) => ({ ...f, groupName: value }));
+    else if (field === "name") setForm((f) => ({ ...f, name: value }));
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -46,8 +62,10 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
         group_name: form.groupName,
         name: form.name,
         price_delta: Number(form.priceDelta) || 0,
+        translations: form.translations,
       };
-      if (editingId && editingId !== "new") {
+      const editing = editingId && editingId !== "new";
+      if (editing) {
         await pb.collection("product_options").update(editingId, payload);
       } else {
         await pb.collection("product_options").create({ ...payload, product: productId, order: options.length });
@@ -55,6 +73,7 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
       setEditingId(null);
       setForm(emptyForm);
       await load();
+      toast(editing ? "Seçenek güncellendi" : "Seçenek eklendi");
     } finally {
       setSaving(false);
     }
@@ -64,6 +83,7 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
     if (!confirm("Bu seçeneği silmek istediğine emin misin?")) return;
     await pb.collection("product_options").delete(id);
     await load();
+    toast("Seçenek silindi");
   }
 
   return (
@@ -90,9 +110,11 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
         {options.map((opt) => (
           <div key={opt.id} className="flex items-center justify-between rounded-2xl border border-line px-4 py-2.5 text-sm">
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">{opt.group_name}</span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-ink-soft">
+                {tField(opt, "group_name", main, main)}
+              </span>
               <p className="font-medium">
-                {opt.name}{" "}
+                {tField(opt, "name", main, main)}{" "}
                 <span className="text-ink-soft">
                   {opt.price_delta >= 0 ? "+" : ""}
                   {opt.price_delta}₺
@@ -112,39 +134,30 @@ export function ProductOptionsEditor({ productId }: { productId: string }) {
       </div>
 
       {editingId !== null && (
-        <form onSubmit={handleSubmit} className="space-y-3 rounded-2xl border border-line bg-crema/30 p-4">
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <Label htmlFor="opt-group">Grup</Label>
-              <Input
-                id="opt-group"
-                required
-                placeholder="Boy"
-                value={form.groupName}
-                onChange={(e) => setForm({ ...form, groupName: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="opt-name">Seçenek</Label>
-              <Input
-                id="opt-name"
-                required
-                placeholder="Büyük"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="opt-price">Fiyat farkı (₺)</Label>
-              <Input
-                id="opt-price"
-                type="number"
-                step="0.01"
-                placeholder="25"
-                value={form.priceDelta}
-                onChange={(e) => setForm({ ...form, priceDelta: e.target.value })}
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-line bg-crema/30 p-4">
+          {/* Grup ve seçenek adı dil bazlı — ana dil baz alan, diğerleri çeviri */}
+          <MultiLangFields
+            locales={activeLocales(business)}
+            mainLocale={main}
+            base={{ group_name: form.groupName, name: form.name }}
+            onBaseChange={setBaseField}
+            translations={form.translations}
+            onTranslationsChange={(next) => setForm((f) => ({ ...f, translations: next }))}
+            fields={[
+              { key: "group_name", label: "Grup", required: true, placeholder: "Boy" },
+              { key: "name", label: "Seçenek", required: true, placeholder: "Büyük" },
+            ]}
+          />
+          <div className="sm:max-w-[12rem]">
+            <Label htmlFor="opt-price">Fiyat farkı (₺)</Label>
+            <Input
+              id="opt-price"
+              type="number"
+              step="0.01"
+              placeholder="25"
+              value={form.priceDelta}
+              onChange={(e) => setForm({ ...form, priceDelta: e.target.value })}
+            />
           </div>
           <div className="flex gap-3">
             <Button type="submit" loading={saving}>

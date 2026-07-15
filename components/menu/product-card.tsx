@@ -1,9 +1,10 @@
 "use client";
 
+import { useRef, useState } from "react";
 import type { Product, Template } from "@/lib/types";
 import { allergenLabels, badgeLabels } from "@/lib/labels";
 import { formatPrice } from "@/lib/format";
-import { BadgeIcon, ClockIcon, FlameIcon } from "@/components/icons";
+import { BadgeIcon, CheckCircleIcon, ClockIcon, FlameIcon } from "@/components/icons";
 import { useMenu } from "@/components/menu/menu-provider";
 
 export function ProductCard({
@@ -18,7 +19,17 @@ export function ProductCard({
   onOpen?: () => void;
 }) {
   const { locale, t, tf } = useMenu();
+  const [added, setAdded] = useState(false);
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasDiscount = product.discount_percent > 0;
+
+  function handleAdd(e: React.MouseEvent) {
+    e.stopPropagation();
+    onAdd(product);
+    setAdded(true);
+    if (addedTimer.current) clearTimeout(addedTimer.current);
+    addedTimer.current = setTimeout(() => setAdded(false), 1100);
+  }
   const finalPrice = hasDiscount ? product.price * (1 - product.discount_percent / 100) : product.price;
   const image = product.images?.[0];
   const isGrid = template === "grid";
@@ -68,7 +79,7 @@ export function ProductCard({
             ))}
             {product.campaign_label && (
               <span className="rounded-full bg-herb/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-herb">
-                {product.campaign_label}
+                {tf(product, "campaign_label")}
               </span>
             )}
           </div>
@@ -101,13 +112,21 @@ export function ProductCard({
         )}
 
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdd(product);
-          }}
-          className="mt-3 self-start rounded-full border border-[var(--brand)] px-4 py-1.5 font-mono text-[12px] uppercase tracking-wider text-[var(--brand-text)] transition-colors hover:bg-[var(--brand)] hover:text-[var(--brand-on)]"
+          onClick={handleAdd}
+          className={`mt-3 flex items-center gap-1.5 self-start rounded-full border px-4 py-1.5 font-mono text-[12px] uppercase tracking-wider transition-colors ${
+            added
+              ? "cart-pop border-[var(--brand)] bg-[var(--brand)] text-[var(--brand-on)]"
+              : "border-[var(--brand)] text-[var(--brand-text)] hover:bg-[var(--brand)] hover:text-[var(--brand-on)]"
+          }`}
         >
-          + {t("addToCart")}
+          {added ? (
+            <>
+              <CheckCircleIcon size={14} strokeWidth={2.2} />
+              {t("addToCart")}
+            </>
+          ) : (
+            <>+ {t("addToCart")}</>
+          )}
         </button>
       </div>
     </div>

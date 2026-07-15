@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { pb } from "@/lib/pocketbase";
 import { useMenu } from "@/components/menu/menu-provider";
 import { allergenLabels, badgeLabels } from "@/lib/labels";
 import { formatPrice } from "@/lib/format";
-import { BadgeIcon, ClockIcon, FlameIcon } from "@/components/icons";
+import { BadgeIcon, CheckCircleIcon, ClockIcon, FlameIcon } from "@/components/icons";
 import type { Product, ProductOption } from "@/lib/types";
 
 export default function ProductDetailPage() {
@@ -16,6 +16,8 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [options, setOptions] = useState<ProductOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [added, setAdded] = useState(false);
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,8 +67,16 @@ export default function ProductDetailPage() {
       {image && (
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-crema sm:aspect-[2/1]">
           <picture>
-            <img src={image} alt={name} loading="eager" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
+            <img
+              src={image}
+              alt={name}
+              loading="eager"
+              fetchPriority="high"
+              className="ken-burns absolute inset-0 h-full w-full object-cover"
+            />
           </picture>
+          {/* Alt kenarda içeriğe yumuşak geçiş için hafif degrade */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-paper/60 to-transparent" />
         </div>
       )}
 
@@ -94,7 +104,7 @@ export default function ProductDetailPage() {
             ))}
             {product.campaign_label && (
               <span className="rounded-full bg-herb/10 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wider text-herb">
-                {product.campaign_label}
+                {tf(product, "campaign_label")}
               </span>
             )}
           </div>
@@ -137,11 +147,13 @@ export default function ProductDetailPage() {
           <div className="space-y-3">
             {Array.from(optionGroups.entries()).map(([groupName, groupOptions]) => (
               <div key={groupName} className="rounded-xl border border-line p-4">
-                <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">{groupName}</p>
+                <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">
+                  {tf(groupOptions[0], "group_name")}
+                </p>
                 <div className="mt-2 space-y-1.5">
                   {groupOptions.map((opt) => (
                     <div key={opt.id} className="flex items-center justify-between text-sm">
-                      <span>{opt.name}</span>
+                      <span>{tf(opt, "name")}</span>
                       <span className="font-mono text-ink-soft">
                         {opt.price_delta >= 0 ? "+" : ""}
                         {formatPrice(opt.price_delta)}
@@ -155,11 +167,23 @@ export default function ProductDetailPage() {
         )}
 
         <button
-          onClick={() => addProduct(product)}
-          className="w-full rounded-xl py-4 font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90"
+          onClick={() => {
+            addProduct(product);
+            setAdded(true);
+            if (addedTimer.current) clearTimeout(addedTimer.current);
+            addedTimer.current = setTimeout(() => setAdded(false), 1100);
+          }}
+          className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 font-display text-lg font-bold shadow-lg transition-opacity hover:opacity-90 ${added ? "cart-pop" : ""}`}
           style={{ background: "var(--brand)", color: "var(--brand-on)" }}
         >
-          + {t("addToCart")} · {formatPrice(finalPrice)}
+          {added ? (
+            <>
+              <CheckCircleIcon size={20} strokeWidth={2.4} />
+              {t("addToCart")}
+            </>
+          ) : (
+            <>+ {t("addToCart")} · {formatPrice(finalPrice)}</>
+          )}
         </button>
       </div>
     </div>

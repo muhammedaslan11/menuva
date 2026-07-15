@@ -66,7 +66,7 @@ export default function EditProductPage() {
             setSavedAt(Date.now());
           }}
         />
-        <ProductOptionsEditor productId={product.id} />
+        <ProductOptionsEditor business={business} productId={product.id} />
       </div>
     </div>
   );

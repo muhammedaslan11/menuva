@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { pb } from "@/lib/pocketbase";
+import { useToast } from "@/components/panel/toast";
 import { allergenLabels, badgeLabels } from "@/lib/labels";
 import { Card, ErrorText, FormActions, Input, Label, Select } from "@/components/panel/ui";
 import { ImageUploader } from "@/components/panel/image-uploader";
@@ -37,9 +38,11 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
   const [translations, setTranslations] = useState<Translations>(initial?.translations ?? {});
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   function setBaseField(field: TranslatableField, value: string) {
     if (field === "name") setName(value);
+    else if (field === "campaign_label") setCampaignLabel(value);
     else setDescription(value);
   }
 
@@ -79,9 +82,11 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
       const record = initial
         ? await pb.collection("products").update<Product>(initial.id, payload)
         : await pb.collection("products").create<Product>({ ...payload, order: 999 });
+      toast(initial ? "Ürün güncellendi" : "Ürün eklendi");
       onSaved(record);
     } catch {
       setError("Kaydedilemedi, alanları kontrol edip tekrar dene.");
+      toast("Kaydedilemedi, tekrar dene.", "error");
     } finally {
       setSaving(false);
     }
@@ -161,7 +166,7 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
                 type="button"
                 key={badge}
                 onClick={() => toggle(badges, badge, setBadges)}
-                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
                   badges.includes(badge)
                     ? "border-paprika bg-paprika text-paper"
                     : "border-line text-ink-soft hover:border-paprika hover:text-paprika"
@@ -180,7 +185,7 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
                 type="button"
                 key={allergen}
                 onClick={() => toggle(allergens, allergen, setAllergens)}
-                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
                   allergens.includes(allergen)
                     ? "border-ink bg-ink text-paper"
                     : "border-line text-ink-soft hover:border-ink"
@@ -195,28 +200,27 @@ export function ProductForm({ business, categories, initial, onSaved, onCancel }
 
       <Card className="space-y-4">
         <p className="font-mono text-[11px] uppercase tracking-wider text-ink-soft">Kampanya</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="p-discount">İndirim (%)</Label>
-            <Input
-              id="p-discount"
-              type="number"
-              min={0}
-              max={100}
-              value={discountPercent}
-              onChange={(e) => setDiscountPercent(e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="p-campaign">Etiket</Label>
-            <Input
-              id="p-campaign"
-              value={campaignLabel}
-              onChange={(e) => setCampaignLabel(e.target.value)}
-              placeholder="Haftanın kampanyası"
-            />
-          </div>
+        <div className="sm:max-w-[12rem]">
+          <Label htmlFor="p-discount">İndirim (%)</Label>
+          <Input
+            id="p-discount"
+            type="number"
+            min={0}
+            max={100}
+            value={discountPercent}
+            onChange={(e) => setDiscountPercent(e.target.value)}
+          />
         </div>
+        {/* Kampanya etiketi de dil bazlı — ana dil baz alan, diğerleri çeviri */}
+        <MultiLangFields
+          locales={activeLocales(business)}
+          mainLocale={mainLocale(business)}
+          base={{ campaign_label: campaignLabel }}
+          onBaseChange={setBaseField}
+          translations={translations}
+          onTranslationsChange={setTranslations}
+          fields={[{ key: "campaign_label", label: "Etiket", placeholder: "Haftanın kampanyası" }]}
+        />
       </Card>
 
       <ErrorText>{error}</ErrorText>

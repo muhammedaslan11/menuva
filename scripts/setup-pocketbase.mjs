@@ -168,6 +168,12 @@ async function main() {
         "copper",
         "slate",
       ], { maxSelect: 1 }),
+      // Özel marka rengi (hex) — doluysa preset "theme" yerine kullanılır.
+      text("theme_color", { max: 9 }),
+      // Menü arka planı / yüzey tonu (lib/surfaces.ts anahtarı).
+      text("menu_bg", { max: 20 }),
+      // Menü yazı tipi (lib/fonts.ts anahtarı).
+      text("font", { max: 20 }),
       select("template", ["liste", "grid"], { maxSelect: 1 }),
       text("phone", { max: 30 }),
       text("address", { max: 300 }),
@@ -300,6 +306,7 @@ async function main() {
       text("name", { required: true, max: 60 }),
       num("price_delta"),
       num("order", { onlyInt: true }),
+      json("translations"),
       ...stamps(),
     ],
     indexes: ["CREATE INDEX `idx_product_options_product` ON `product_options` (`product`)"],
@@ -322,6 +329,7 @@ async function main() {
       boolField("is_active"),
       dateField("starts_at"),
       dateField("ends_at"),
+      json("translations"),
       ...stamps(),
     ],
     indexes: ["CREATE INDEX `idx_popups_business` ON `popups` (`business`)"],

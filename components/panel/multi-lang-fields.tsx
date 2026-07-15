@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { localeLabels, type Locale, type TranslatableField, type Translations } from "@/lib/i18n";
+import { localeCodes, localeLabels, type Locale, type TranslatableField, type Translations } from "@/lib/i18n";
 import { Input, Label, Tabs, Textarea } from "@/components/panel/ui";
 
 interface FieldDef {
@@ -46,7 +46,7 @@ export function MultiLangFields({
 
   const tabItems = locales.map((l) => ({
     key: l,
-    label: l === mainLocale ? `${localeLabels[l]} · Ana` : localeLabels[l],
+    label: l === mainLocale ? `${localeCodes[l]} · Ana` : localeCodes[l],
   }));
 
   return (

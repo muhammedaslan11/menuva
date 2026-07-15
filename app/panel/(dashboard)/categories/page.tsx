@@ -4,12 +4,14 @@ import { useEffect, useState, type DragEvent } from "react";
 import Link from "next/link";
 import { pb } from "@/lib/pocketbase";
 import { useBusiness } from "@/components/panel/business-context";
+import { useToast } from "@/components/panel/toast";
 import { Button, Card, EmptyState, PageHeader } from "@/components/panel/ui";
 import { GripIcon } from "@/components/icons";
 import type { Category } from "@/lib/types";
 
 export default function CategoriesPage() {
   const { business, isLoading: businessLoading } = useBusiness();
+  const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -35,6 +37,7 @@ export default function CategoriesPage() {
     if (!confirm("Bu kategoriyi ve içindeki tüm ürünleri silmek istediğine emin misin?")) return;
     await pb.collection("categories").delete(id);
     await load();
+    toast("Kategori silindi");
   }
 
   function handleDragStart(index: number) {

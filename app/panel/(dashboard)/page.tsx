@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/use-auth";
 import { useBusiness } from "@/components/panel/business-context";
 import { isReservedSlug, slugify } from "@/lib/slug";
 import { Button, Card, ErrorText, Input, Label, PageHeader } from "@/components/panel/ui";
+import { QrShare } from "@/components/panel/qr-share";
 import { planLabels } from "@/lib/labels";
 import { ROOT_DOMAIN, menuHost } from "@/lib/site";
 import type { Business, MenuEvent } from "@/lib/types";
@@ -266,6 +267,7 @@ function Overview({ business }: { business: Business }) {
           <p className="mt-2 font-display text-3xl font-extrabold">{planLabels[business.plan]}</p>
         </Card>
       </div>
+      <QrShare business={business} />
       <StatsSection business={business} />
     </div>
   );

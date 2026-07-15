@@ -2,8 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { pb } from "@/lib/pocketbase";
-import { Card, ErrorText, FormActions, Input, Label, Textarea } from "@/components/panel/ui";
+import { useToast } from "@/components/panel/toast";
+import { Card, ErrorText, FormActions, Label } from "@/components/panel/ui";
 import { ImageUploader } from "@/components/panel/image-uploader";
+import { MultiLangFields } from "@/components/panel/multi-lang-fields";
+import { activeLocales, mainLocale, type TranslatableField, type Translations } from "@/lib/i18n";
 import type { Business, Popup } from "@/lib/types";
 
 export function PopupForm({
@@ -21,8 +24,15 @@ export function PopupForm({
   const [message, setMessage] = useState(initial?.message ?? "");
   const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
+  const [translations, setTranslations] = useState<Translations>(initial?.translations ?? {});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const { toast } = useToast();
+
+  function setBaseField(field: TranslatableField, value: string) {
+    if (field === "title") setTitle(value);
+    else setMessage(value);
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -35,13 +45,16 @@ export function PopupForm({
         message,
         image_url: imageUrl,
         is_active: isActive,
+        translations,
       };
       const record = initial
         ? await pb.collection("popups").update<Popup>(initial.id, payload)
         : await pb.collection("popups").create<Popup>(payload);
+      toast(initial ? "Kampanya güncellendi" : "Kampanya eklendi");
       onSaved(record);
     } catch {
       setError("Kaydedilemedi, tekrar dene.");
+      toast("Kaydedilemedi, tekrar dene.", "error");
     } finally {
       setSaving(false);
     }
@@ -62,14 +75,19 @@ export function PopupForm({
           <Label>Görsel (opsiyonel)</Label>
           <ImageUploader value={imageUrl} onChange={setImageUrl} businessId={business.id} kind="popup" aspect="aspect-square" />
         </div>
-        <div>
-          <Label htmlFor="pop-title">Başlık</Label>
-          <Input id="pop-title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Bu hafta sonuna özel!" />
-        </div>
-        <div>
-          <Label htmlFor="pop-message">Mesaj</Label>
-          <Textarea id="pop-message" rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />
-        </div>
+        {/* Başlık ve mesaj dil bazlı — ana dil baz alan, diğerleri çeviri */}
+        <MultiLangFields
+          locales={activeLocales(business)}
+          mainLocale={mainLocale(business)}
+          base={{ title, message }}
+          onBaseChange={setBaseField}
+          translations={translations}
+          onTranslationsChange={setTranslations}
+          fields={[
+            { key: "title", label: "Başlık", required: true, placeholder: "Bu hafta sonuna özel!" },
+            { key: "message", label: "Mesaj", multiline: true, rows: 3 },
+          ]}
+        />
       </form>
     </Card>
   );

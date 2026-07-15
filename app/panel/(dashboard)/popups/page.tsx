@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { pb } from "@/lib/pocketbase";
 import { useBusiness } from "@/components/panel/business-context";
+import { useToast } from "@/components/panel/toast";
 import { Button, Card, EmptyState, PageHeader } from "@/components/panel/ui";
 import type { Popup } from "@/lib/types";
 
 export default function AnnouncementsPage() {
   const { business, isLoading: businessLoading } = useBusiness();
+  const { toast } = useToast();
   const [popups, setPopups] = useState<Popup[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,6 +34,7 @@ export default function AnnouncementsPage() {
     if (!confirm("Bu duyuruyu silmek istediğine emin misin?")) return;
     await pb.collection("popups").delete(id);
     await load();
+    toast("Kampanya silindi");
   }
 
   if (businessLoading || loading) {

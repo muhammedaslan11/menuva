@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { pb } from "@/lib/pocketbase";
 import { useBusiness } from "@/components/panel/business-context";
+import { useToast } from "@/components/panel/toast";
 import { Button, Card, EmptyState, PageHeader } from "@/components/panel/ui";
 import type { Category, Product } from "@/lib/types";
 
 export default function ProductsPage() {
   const { business, isLoading: businessLoading } = useBusiness();
+  const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,14 +39,17 @@ export default function ProductsPage() {
   }
 
   async function toggleAvailable(product: Product) {
-    setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, is_available: !p.is_available } : p)));
-    await pb.collection("products").update(product.id, { is_available: !product.is_available });
+    const next = !product.is_available;
+    setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, is_available: next } : p)));
+    await pb.collection("products").update(product.id, { is_available: next });
+    toast(next ? "Ürün satışa açıldı" : "Ürün satıştan kaldırıldı");
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Bu ürünü silmek istediğine emin misin?")) return;
     await pb.collection("products").delete(id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
+    toast("Ürün silindi");
   }
 
   if (businessLoading || loading) {

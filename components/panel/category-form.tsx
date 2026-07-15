@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { pb } from "@/lib/pocketbase";
+import { useToast } from "@/components/panel/toast";
 import { Card, ErrorText, FormActions, Label } from "@/components/panel/ui";
 import { ImageUploader } from "@/components/panel/image-uploader";
 import { MultiLangFields } from "@/components/panel/multi-lang-fields";
@@ -28,6 +29,7 @@ export function CategoryForm({
   const [translations, setTranslations] = useState<Translations>(initial?.translations ?? {});
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   function setBaseField(field: TranslatableField, value: string) {
     if (field === "name") setName(value);
@@ -43,9 +45,11 @@ export function CategoryForm({
       const record = initial
         ? await pb.collection("categories").update<Category>(initial.id, payload)
         : await pb.collection("categories").create<Category>({ ...payload, business: business.id, order: order ?? 0 });
+      toast(initial ? "Kategori güncellendi" : "Kategori eklendi");
       onSaved(record);
     } catch {
       setError("Kaydedilemedi, tekrar dene.");
+      toast("Kaydedilemedi, tekrar dene.", "error");
     } finally {
       setSaving(false);
     }

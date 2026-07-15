@@ -107,8 +107,45 @@ body {
   translate: 0 0;
 }
 
+/* Toast giriş animasyonu (panel bildirimleri) */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.toast-in {
+  animation: toast-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Ürün detay görseli — yavaş yakınlaşan/kayan "ken burns" hareketi */
+@keyframes ken-burns {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.12) translate(-1.5%, -1%); }
+}
+.ken-burns {
+  animation: ken-burns 14s ease-in-out infinite alternate;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Sepete ekleme geri bildirimi — butonda kısa bir zıplama */
+@keyframes cart-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.92); }
+  70% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.cart-pop {
+  animation: cart-pop 0.42s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .rise, .menu-drift {
+  .rise, .menu-drift, .toast-in, .cart-pop, .ken-burns {
     animation: none;
   }
   [data-reveal] {

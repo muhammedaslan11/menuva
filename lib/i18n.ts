@@ -27,13 +27,20 @@ export function isRTLLocale(locale: Locale): boolean {
   return locale === "ar";
 }
 
-export type TranslatableField = "name" | "description";
+// Çevrilebilir metin alanları. name/description varlıkların baz alanları;
+// campaign_label ürünlere, group_name ürün seçeneklerine (varyant), title/message
+// ise açılış popup'larına özeldir.
+export type TranslatableField = "name" | "description" | "campaign_label" | "group_name" | "title" | "message";
 
 export type Translations = Partial<Record<Locale, Partial<Record<TranslatableField, string>>>>;
 
 export interface Translatable {
-  name: string;
+  name?: string;
   description?: string;
+  campaign_label?: string;
+  group_name?: string;
+  title?: string;
+  message?: string;
   translations?: Translations;
 }
 
@@ -93,6 +100,13 @@ export function getStoredLocale(): Locale {
   if (typeof window === "undefined") return DEFAULT_LOCALE;
   const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
   return isSupportedLocale(stored) ? stored : DEFAULT_LOCALE;
+}
+
+// Ziyaretçi daha önce bir dil seçmiş mi? İlk açılışta dil seçim modalını
+// göstermek için kullanılır (seçildikten sonra tekrar gösterilmez).
+export function hasStoredLocale(): boolean {
+  if (typeof window === "undefined") return true;
+  return isSupportedLocale(window.localStorage.getItem(LOCALE_STORAGE_KEY));
 }
 
 export function storeLocale(locale: Locale): void {

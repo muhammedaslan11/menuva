@@ -37,7 +37,7 @@ export default function WelcomePage() {
     <div className="flex flex-col items-center px-5 pb-10 text-center">
       {/* Kapak şeridi — görsel yoksa hiç gösterilmez */}
       {business.cover_url && (
-        <div className="relative -mx-5 h-32 w-[calc(100%+2.5rem)] overflow-hidden sm:h-40">
+        <div className="relative -mx-5 !h-[250px] w-[calc(100%+2.5rem)] overflow-hidden">
           <picture>
             <img src={business.cover_url} alt="" loading="eager" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
           </picture>

@@ -120,6 +120,12 @@ export function readableAccent(hex: string, bgHex: string = PAPER, minRatio = 3)
  * okunaklılığından (readableAccent, eşik 3+) daha gevşek bir eşik kullanır —
  * burada "okunması" değil, bir yüzey olarak "farkedilmesi" yeterli.
  */
-export function visibleFill(hex: string): string {
-  return readableAccent(hex, PAPER, 1.5);
+export function visibleFill(hex: string, bgHex: string = PAPER): string {
+  return readableAccent(hex, bgHex, 1.5);
+}
+
+// Kullanıcının girdiği özel rengin geçerli bir hex olup olmadığını doğrular
+// (#rgb ya da #rrggbb). Menü özelleştirmesinde preset dışı renk için kullanılır.
+export function isValidHex(value: string | null | undefined): value is string {
+  return !!value && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim());
 }

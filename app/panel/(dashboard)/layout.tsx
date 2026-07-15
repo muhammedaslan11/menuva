@@ -7,13 +7,15 @@ import { Logo } from "@/components/chrome";
 import { useAuth } from "@/lib/use-auth";
 import { pb } from "@/lib/pocketbase";
 import { BusinessProvider, useBusiness } from "@/components/panel/business-context";
+import { ToastProvider } from "@/components/panel/toast";
 import { menuUrl } from "@/lib/site";
 import {
+  ExternalLinkIcon,
   FolderIcon,
   LayoutIcon,
+  LogoutIcon,
   MegaphoneIcon,
   PackageIcon,
-  QrCodeIcon,
   SettingsIcon,
   StarIcon,
 } from "@/components/icons";
@@ -24,7 +26,6 @@ const navItems = [
   { href: "/panel/products", label: "Ürünler", Icon: PackageIcon, prefixes: ["/panel/products", "/panel/product/"] },
   { href: "/panel/popups", label: "Kampanyalar", Icon: MegaphoneIcon, prefixes: ["/panel/popups", "/panel/popup/"] },
   { href: "/panel/reviews", label: "Değerlendirmeler", Icon: StarIcon, prefixes: ["/panel/reviews"] },
-  { href: "/panel/qr", label: "QR & paylaş", Icon: QrCodeIcon, prefixes: ["/panel/qr"] },
   { href: "/panel/settings", label: "Ayarlar", Icon: SettingsIcon, prefixes: ["/panel/settings"] },
 ];
 
@@ -54,22 +55,24 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           <Link href="/panel">
             <Logo />
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5">
             {business && (
               <a
                 href={menuUrl(business.slug)}
                 target="_blank"
                 rel="noreferrer"
-                className="hidden font-mono text-[12px] uppercase tracking-wider text-herb hover:underline sm:inline"
+                className="inline-flex items-center gap-2 rounded-full bg-herb px-3.5 py-2 font-mono text-[12px] uppercase tracking-wider text-paper shadow-sm transition-colors hover:bg-herb/90"
               >
-                Menüyü gör ↗
+                <ExternalLinkIcon size={15} strokeWidth={2} />
+                <span className="hidden sm:inline">Menüyü gör</span>
               </a>
             )}
             <button
               onClick={handleLogout}
-              className="font-mono text-[12px] uppercase tracking-wider text-ink-soft transition-colors hover:text-paprika"
+              className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-2 font-mono text-[12px] uppercase tracking-wider text-ink transition-colors hover:border-paprika hover:text-paprika"
             >
-              Çıkış
+              <LogoutIcon size={15} strokeWidth={2} />
+              <span className="hidden sm:inline">Çıkış</span>
             </button>
           </div>
         </div>
@@ -137,7 +140,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <BusinessProvider>
-      <DashboardShell>{children}</DashboardShell>
+      <ToastProvider>
+        <DashboardShell>{children}</DashboardShell>
+      </ToastProvider>
     </BusinessProvider>
   );
 }
