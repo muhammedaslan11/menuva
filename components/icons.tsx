@@ -145,6 +145,15 @@ export function WifiIcon(p: IconProps) {
   );
 }
 
+export function EyeIcon(p: IconProps) {
+  return (
+    <Svg {...p}>
+      <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+      <circle cx="12" cy="12" r="3" />
+    </Svg>
+  );
+}
+
 export function ClockIcon(p: IconProps) {
   return (
     <Svg {...p}>
@@ -430,7 +439,7 @@ function ChefHatIcon(p: IconProps) {
   );
 }
 
-function TrendingUpIcon(p: IconProps) {
+export function TrendingUpIcon(p: IconProps) {
   return (
     <Svg {...p}>
       <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />

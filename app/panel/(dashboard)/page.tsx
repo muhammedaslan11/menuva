@@ -70,7 +70,7 @@ function Onboarding() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="name">İşletme adı</Label>
-            <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Kardelen Cafe" />
+            <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Alpha Cafe" />
           </div>
           <div>
             <Label htmlFor="slug">Menü adresi</Label>

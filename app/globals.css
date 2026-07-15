@@ -84,6 +84,9 @@ body {
 .rise-3 { animation-delay: 0.25s; }
 .rise-4 { animation-delay: 0.4s; }
 
+.rise-5 { animation-delay: 0.5s; }
+.rise-6 { animation-delay: 0.6s; }
+
 /* Telefon mockup içindeki menünün hafif kayma animasyonu */
 @keyframes menu-drift {
   0%, 18% { transform: translateY(0); }
@@ -92,6 +95,151 @@ body {
 }
 .menu-drift {
   animation: menu-drift 9s ease-in-out infinite;
+}
+
+/* ─── Landing page hareket katmanı ───────────────────────── */
+
+/* Hero arkasındaki sıcak ışık lekeleri — yavaşça sürüklenir */
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3%, -4%) scale(1.08); }
+  66% { transform: translate(-3%, 3%) scale(0.95); }
+}
+.blob-drift {
+  animation: blob-drift 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Telefon mockup ve serbest kartların süzülmesi */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-y {
+  animation: float-y 6s ease-in-out infinite;
+}
+.float-y-slow {
+  animation: float-y 8s ease-in-out infinite;
+}
+
+/* "Canlı" göstergesi — nabız gibi genişleyen halka */
+@keyframes pulse-ring {
+  0% { transform: scale(0.7); opacity: 0.7; }
+  70%, 100% { transform: scale(2.2); opacity: 0; }
+}
+.pulse-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: pulse-ring 2s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+
+/* Sonsuz kayan güven şeridi */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+/* H1 altındaki fırça darbesi — soldan sağa çizilir */
+@keyframes stroke-draw {
+  from { stroke-dashoffset: 200; }
+  to { stroke-dashoffset: 0; }
+}
+.stroke-draw {
+  stroke-dasharray: 200;
+  animation: stroke-draw 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.5s both;
+}
+
+/* CTA üzerinde geçen ışık parıltısı */
+@keyframes shine {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to { transform: translateX(320%) skewX(-18deg); }
+}
+.shine-on-hover::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* left olmadan parıltı statik konumuna (yazının sağına) oturur ve
+     hover beklemeden görünür kalır — sola kaydırabilmek için sabitlenmeli. */
+  left: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(251, 245, 234, 0.35), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+}
+.shine-on-hover:hover::after {
+  animation: shine 0.8s ease-out;
+}
+
+/* Mobil menü çekmecesi */
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.drawer-in {
+  animation: drawer-in 0.24s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.drawer-item {
+  animation: rise-in 0.36s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* ─── Grafik animasyonları ───────────────────────────────────
+   Hepsi görünürlüğe bağlı: ScrollReveal kapsayıcıya .revealed
+   eklediğinde tetiklenir, öncesinde grafik boş durur.
+──────────────────────────────────────────────────────────── */
+
+/* Sütun/bar dolgusu kendi tabanından büyür */
+@keyframes bar-grow-y {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+@keyframes bar-grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.chart [data-bar-y] {
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+.chart [data-bar-x] {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.chart.revealed [data-bar-y] {
+  animation: bar-grow-y 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.chart.revealed [data-bar-x] {
+  animation: bar-grow-x 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Çizgi soldan sağa çizilir, alan dolgusu arkasından belirir */
+@keyframes path-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.chart [data-line] {
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+}
+.chart [data-fade] {
+  opacity: 0;
+}
+.chart.revealed [data-line] {
+  animation: path-draw 1.5s cubic-bezier(0.3, 0.5, 0.2, 1) both;
+}
+.chart.revealed [data-fade] {
+  animation: fade-in 0.6s ease-out both;
 }
 
 /* Scroll ile görünür olan bölümler — ScrollReveal component'i .revealed ekler */
@@ -145,13 +293,38 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .menu-drift, .toast-in, .cart-pop, .ken-burns {
+  .rise, .menu-drift, .toast-in, .cart-pop, .ken-burns,
+  .blob-drift, .float-y, .float-y-slow, .marquee-track,
+  .stroke-draw, .drawer-in, .drawer-item {
     animation: none;
+  }
+  .pulse-ring::after,
+  .shine-on-hover:hover::after {
+    animation: none;
+    opacity: 0;
+  }
+  .stroke-draw {
+    stroke-dasharray: none;
   }
   [data-reveal] {
     opacity: 1;
     translate: none;
     transition: none;
+  }
+  /* Grafikler animasyonsuz da olsa tam ve okunur durmalı */
+  .chart [data-bar-y],
+  .chart [data-bar-x] {
+    transform: none;
+    animation: none;
+  }
+  .chart [data-line] {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .chart [data-fade] {
+    opacity: 1;
+    animation: none;
   }
   html {
     scroll-behavior: auto;

@@ -1,4 +1,4 @@
-// İşletme sahibi kullanıcı adı ("kardelencafe") ya da tam URL yapıştırabilir;
+// İşletme sahibi kullanıcı adı ("alphacafe") ya da tam URL yapıştırabilir;
 // panelde ne yazıldıysa o saklanır, link sadece görüntülenirken kurulur.
 function toUrl(base: string, value: string): string {
   const trimmed = value.trim();

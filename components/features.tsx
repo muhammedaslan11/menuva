@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const menuFeatures = [
   {
     name: "Sürükle & Bırak Yönetim",
@@ -146,15 +148,40 @@ export function HowItWorks() {
         </h2>
 
         <div className="mt-14 grid gap-10 md:grid-cols-3">
-          {steps.map((s) => (
-            <div key={s.n} data-reveal className="border-t-2 border-paprika pt-5">
+          {steps.map((s, i) => (
+            <div
+              key={s.n}
+              data-reveal
+              style={{ transitionDelay: `${i * 110}ms` }}
+              className="group border-t-2 border-paprika pt-5"
+            >
               <span className="font-mono text-sm text-paprika">{s.n}.</span>
-              <h3 className="mt-2 font-display text-2xl font-bold">
+              <h3 className="mt-2 font-display text-2xl font-bold transition-colors group-hover:text-paprika">
                 {s.title}
               </h3>
               <p className="mt-2 leading-relaxed text-paper/60">{s.desc}</p>
             </div>
           ))}
+        </div>
+
+        <div
+          data-reveal
+          className="mt-16 flex flex-col items-center gap-5 rounded-2xl border border-paper/12 bg-paper/[0.04] p-8 text-center sm:flex-row sm:justify-between sm:text-left"
+        >
+          <div>
+            <p className="font-display text-xl font-bold">
+              Kurulum için kimseyi beklemenize gerek yok.
+            </p>
+            <p className="mt-1.5 text-sm text-paper/60">
+              Hesabınızı şimdi açın, menünüz akşam servisine yetişsin.
+            </p>
+          </div>
+          <Link
+            href="/panel/register"
+            className="shine-on-hover relative w-full shrink-0 overflow-hidden rounded-full bg-paprika px-8 py-3.5 text-center font-mono text-[13px] uppercase tracking-wider text-paper transition-all duration-300 hover:-translate-y-0.5 hover:bg-paprika-deep sm:w-auto"
+          >
+            Ücretsiz başla
+          </Link>
         </div>
       </div>
     </section>

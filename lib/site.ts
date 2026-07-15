@@ -25,3 +25,11 @@ const WHATSAPP_NUMBER = "905357631908";
 export function whatsappLink(message: string): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
+
+// Fiyat kartlarından gelen talepler: hangi planın tıklandığı mesaja yazılır,
+// böylece konuşma "hangi paket?" sorusuyla başlamaz.
+export function planWhatsappLink(plan: string): string {
+  return whatsappLink(
+    `Merhaba! menuva "${plan}" planıyla ilgileniyorum. Detayları ve fiyatı öğrenebilir miyim?`
+  );
+}
