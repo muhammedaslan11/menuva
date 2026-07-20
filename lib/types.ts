@@ -1,6 +1,6 @@
 import type { Locale, Translations } from "@/lib/i18n";
 
-export type Plan = "ucretsiz" | "baslangic" | "pro" | "isletme";
+export type Plan = "freemium" | "premium" | "elite";
 export type Template = "liste" | "grid";
 
 export type Allergen =
@@ -168,4 +168,102 @@ export interface Popup {
   translations?: Translations;
   created: string;
   updated: string;
+}
+
+// ─── Admin paneli ──────────────────────────────────────────────────
+
+export interface PlanLimits {
+  max_businesses: number | null;
+  max_menus: number | null;
+  max_products: number | null;
+  analytics: boolean;
+  custom_domain: boolean;
+  branding_removal: boolean;
+  campaigns: boolean;
+  team_management: boolean;
+  white_label: boolean;
+  api_access: boolean;
+}
+
+export interface PlanRecord {
+  id: string;
+  key: Plan;
+  name: string;
+  description: string;
+  price_6m: number;
+  price_12m: number;
+  features: string[];
+  limits: PlanLimits;
+  is_active: boolean;
+  is_default: boolean;
+  order: number;
+  created: string;
+  updated: string;
+}
+
+export type TicketStatus = "open" | "answered" | "closed";
+
+export interface SupportTicket {
+  id: string;
+  business: string;
+  user: string;
+  subject: string;
+  status: TicketStatus;
+  created: string;
+  updated: string;
+  expand?: {
+    business?: Business;
+    user?: { id: string; name: string; email: string };
+  };
+}
+
+export type TicketSender = "user" | "admin";
+
+export interface TicketMessage {
+  id: string;
+  ticket: string;
+  sender: TicketSender;
+  admin?: string;
+  body: string;
+  created: string;
+  updated: string;
+  expand?: {
+    admin?: { id: string; name: string };
+  };
+}
+
+export type NotificationAudience = "all" | "freemium" | "premium" | "elite" | "user";
+
+export interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  audience: NotificationAudience;
+  user?: string;
+  created_by: string;
+  created: string;
+  updated: string;
+}
+
+export interface NotificationRead {
+  id: string;
+  notification: string;
+  user: string;
+  created: string;
+  updated: string;
+}
+
+export interface AdminLog {
+  id: string;
+  admin?: string;
+  action: string;
+  target: string;
+  meta: Record<string, unknown>;
+  ip: string;
+  user_agent: string;
+  created: string;
+  updated: string;
+  expand?: {
+    admin?: { id: string; name: string; email: string };
+  };
 }

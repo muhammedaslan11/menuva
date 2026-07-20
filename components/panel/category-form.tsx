@@ -43,8 +43,8 @@ export function CategoryForm({
     try {
       const payload = { name, description, image_url: imageUrl, is_active: isActive, translations };
       const record = initial
-        ? await pb.collection("categories").update<Category>(initial.id, payload)
-        : await pb.collection("categories").create<Category>({ ...payload, business: business.id, order: order ?? 0 });
+        ? await pb.collection("menuva_categories").update<Category>(initial.id, payload)
+        : await pb.collection("menuva_categories").create<Category>({ ...payload, business: business.id, order: order ?? 0 });
       toast(initial ? "Kategori güncellendi" : "Kategori eklendi");
       onSaved(record);
     } catch {

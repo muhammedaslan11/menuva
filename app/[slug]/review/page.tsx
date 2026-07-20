@@ -46,7 +46,7 @@ export default function ReviewPage() {
     setError("");
     setSaving(true);
     try {
-      await pb.collection("reviews").create({
+      await pb.collection("menuva_reviews").create({
         business: business.id,
         is_first_visit: firstVisit === true,
         hygiene,

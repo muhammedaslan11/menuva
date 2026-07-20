@@ -1,7 +1,7 @@
 import type { Locale } from "@/lib/i18n";
 import type { Allergen, Badge, Highlight } from "@/lib/types";
 
-export type Plan = "ucretsiz" | "baslangic" | "pro" | "isletme";
+export type Plan = "freemium" | "premium" | "elite";
 export type Template = "liste" | "grid";
 
 export const allergenLabels: Record<Locale, Record<Allergen, string>> = {
@@ -162,8 +162,7 @@ export const highlightLabels: Record<Locale, Record<Highlight, string>> = {
 };
 
 export const planLabels: Record<Plan, string> = {
-  ucretsiz: "Freemium",
-  baslangic: "Başlangıç",
-  pro: "Premium",
-  isletme: "Elite",
+  freemium: "Freemium",
+  premium: "Premium",
+  elite: "Elite",
 };

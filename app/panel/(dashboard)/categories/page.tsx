@@ -25,7 +25,7 @@ export default function CategoriesPage() {
   async function load() {
     if (!business) return;
     setLoading(true);
-    const list = await pb.collection("categories").getFullList<Category>({
+    const list = await pb.collection("menuva_categories").getFullList<Category>({
       filter: pb.filter("business = {:id}", { id: business.id }),
       sort: "order,created",
     });
@@ -35,7 +35,7 @@ export default function CategoriesPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Bu kategoriyi ve içindeki tüm ürünleri silmek istediğine emin misin?")) return;
-    await pb.collection("categories").delete(id);
+    await pb.collection("menuva_categories").delete(id);
     await load();
     toast("Kategori silindi");
   }
@@ -64,7 +64,7 @@ export default function CategoriesPage() {
     next.splice(index, 0, moved);
     setCategories(next);
     handleDragEnd();
-    await Promise.all(next.map((c, i) => pb.collection("categories").update(c.id, { order: i })));
+    await Promise.all(next.map((c, i) => pb.collection("menuva_categories").update(c.id, { order: i })));
   }
 
   if (businessLoading || loading) {

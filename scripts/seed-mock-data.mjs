@@ -108,11 +108,11 @@ const categoriesData = [
 
 async function findOrCreateCategory(businessId, name, order) {
   try {
-    return await pb.collection("categories").getFirstListItem(
+    return await pb.collection("menuva_categories").getFirstListItem(
       pb.filter("business = {:b} && name = {:n}", { b: businessId, n: name })
     );
   } catch {
-    const created = await pb.collection("categories").create({
+    const created = await pb.collection("menuva_categories").create({
       business: businessId,
       name,
       description: "",
@@ -126,7 +126,7 @@ async function findOrCreateCategory(businessId, name, order) {
 
 async function productExists(businessId, categoryId, name) {
   try {
-    await pb.collection("products").getFirstListItem(
+    await pb.collection("menuva_products").getFirstListItem(
       pb.filter("business = {:b} && category = {:c} && name = {:n}", { b: businessId, c: categoryId, n: name })
     );
     return true;
@@ -136,10 +136,10 @@ async function productExists(businessId, categoryId, name) {
 }
 
 async function main() {
-  const business = await pb.collection("businesses").getFirstListItem(pb.filter("slug = {:slug}", { slug: SLUG }));
+  const business = await pb.collection("menuva_businesses").getFirstListItem(pb.filter("slug = {:slug}", { slug: SLUG }));
   console.log(`İşletme bulundu: ${business.name} (${business.id})`);
 
-  const existingCats = await pb.collection("categories").getFullList({
+  const existingCats = await pb.collection("menuva_categories").getFullList({
     filter: pb.filter("business = {:id}", { id: business.id }),
   });
   let nextOrder = existingCats.length;
@@ -148,7 +148,7 @@ async function main() {
   for (const cat of categoriesData) {
     const category = await findOrCreateCategory(business.id, cat.name, nextOrder++);
 
-    const existingProducts = await pb.collection("products").getFullList({
+    const existingProducts = await pb.collection("menuva_products").getFullList({
       filter: pb.filter("category = {:c}", { c: category.id }),
     });
     let prodOrder = existingProducts.length;
@@ -159,7 +159,7 @@ async function main() {
         continue;
       }
 
-      const product = await pb.collection("products").create({
+      const product = await pb.collection("menuva_products").create({
         business: business.id,
         category: category.id,
         name: p.name,
@@ -182,7 +182,7 @@ async function main() {
       if (p.options) {
         let optOrder = 0;
         for (const opt of p.options) {
-          await pb.collection("product_options").create({
+          await pb.collection("menuva_product_options").create({
             product: product.id,
             group_name: opt.group_name,
             name: opt.name,
@@ -195,11 +195,11 @@ async function main() {
     }
   }
 
-  const existingPopups = await pb.collection("popups").getList(1, 1, {
+  const existingPopups = await pb.collection("menuva_popups").getList(1, 1, {
     filter: pb.filter("business = {:id}", { id: business.id }),
   });
   if (existingPopups.totalItems === 0) {
-    await pb.collection("popups").create({
+    await pb.collection("menuva_popups").create({
       business: business.id,
       title: "Hoş geldiniz! 👋",
       message: "Bu hafta sonu tatlılarda %15 indirim var, kaçırmayın!",

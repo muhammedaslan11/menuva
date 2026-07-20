@@ -24,11 +24,11 @@ export default function ProductsPage() {
     if (!business) return;
     setLoading(true);
     const [cats, prods] = await Promise.all([
-      pb.collection("categories").getFullList<Category>({
+      pb.collection("menuva_categories").getFullList<Category>({
         filter: pb.filter("business = {:id}", { id: business.id }),
         sort: "order,created",
       }),
-      pb.collection("products").getFullList<Product>({
+      pb.collection("menuva_products").getFullList<Product>({
         filter: pb.filter("business = {:id}", { id: business.id }),
         sort: "order,created",
       }),
@@ -41,13 +41,13 @@ export default function ProductsPage() {
   async function toggleAvailable(product: Product) {
     const next = !product.is_available;
     setProducts((prev) => prev.map((p) => (p.id === product.id ? { ...p, is_available: next } : p)));
-    await pb.collection("products").update(product.id, { is_available: next });
+    await pb.collection("menuva_products").update(product.id, { is_available: next });
     toast(next ? "Ürün satışa açıldı" : "Ürün satıştan kaldırıldı");
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Bu ürünü silmek istediğine emin misin?")) return;
-    await pb.collection("products").delete(id);
+    await pb.collection("menuva_products").delete(id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
     toast("Ürün silindi");
   }

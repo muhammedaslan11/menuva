@@ -10,7 +10,7 @@ const getBusiness = cache(async (slug: string): Promise<Business | null> => {
   const pb = createServerPB();
   try {
     return await pb
-      .collection("businesses")
+      .collection("menuva_businesses")
       .getFirstListItem<Business>(pb.filter("slug = {:slug} && is_active = true", { slug }));
   } catch {
     return null;
@@ -56,7 +56,7 @@ export default async function MenuLayout({
   const basePath = hdrs.get("x-menuva-rewrite") === "subdomain" ? "" : `/${business.slug}`;
 
   const pb = createServerPB();
-  const popups = await pb.collection("popups").getFullList<Popup>({
+  const popups = await pb.collection("menuva_popups").getFullList<Popup>({
     filter: pb.filter("business = {:id} && is_active = true", { id: business.id }),
     sort: "-created",
   });

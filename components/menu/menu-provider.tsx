@@ -65,7 +65,7 @@ export function useMenu() {
 
 // Ziyaretçi istatistiği: hata olursa (ör. koleksiyon henüz yok) menüyü asla bozmasın.
 function sendEvent(businessId: string, type: MenuEventType, target: string, label: string) {
-  pb.collection("events")
+  pb.collection("menuva_events")
     .create({ business: businessId, type, target, label }, { requestKey: null })
     .catch(() => {});
 }
@@ -288,12 +288,12 @@ export function MenuProvider({
     let cancelled = false;
     setCategoriesLoading(true);
     Promise.all([
-      pb.collection("categories").getFullList<Category>({
+      pb.collection("menuva_categories").getFullList<Category>({
         filter: pb.filter("business = {:id} && is_active = true", { id: business.id }),
         requestKey: null,
         sort: "order,created",
       }),
-      pb.collection("products").getFullList<Product>({
+      pb.collection("menuva_products").getFullList<Product>({
         filter: pb.filter("business = {:id} && is_available = true", { id: business.id }),
         requestKey: null,
         sort: "order,created",
@@ -389,7 +389,7 @@ export function MenuProvider({
   }
 
   async function addProduct(product: Product) {
-    const options = await pb.collection("product_options").getFullList<ProductOption>({
+    const options = await pb.collection("menuva_product_options").getFullList<ProductOption>({
       filter: pb.filter("product = {:id}", { id: product.id }),
       requestKey: null,
       sort: "order,created",

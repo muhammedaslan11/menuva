@@ -29,7 +29,7 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const record = await pb
-        .collection("businesses")
+        .collection("menuva_businesses")
         .getFirstListItem<Business>(pb.filter("owner = {:id}", { id: user.id }), { requestKey: null });
       setBusinessState(record);
       setIsLoading(false);

@@ -19,7 +19,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     let cancelled = false;
-    pb.collection("products")
+    pb.collection("menuva_products")
       .getFullList<Product>({
         filter: pb.filter("business = {:id} && is_available = true", { id: business.id }),
         requestKey: null,

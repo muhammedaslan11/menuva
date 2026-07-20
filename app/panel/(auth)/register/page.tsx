@@ -26,13 +26,13 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await pb.collection("users").create({
+      await pb.collection("menuva_users").create({
         name,
         email,
         password,
         passwordConfirm: password,
       });
-      await pb.collection("users").authWithPassword(email, password);
+      await pb.collection("menuva_users").authWithPassword(email, password);
       router.replace("/panel");
     } catch (err) {
       if (err instanceof ClientResponseError && err.response?.data?.email) {

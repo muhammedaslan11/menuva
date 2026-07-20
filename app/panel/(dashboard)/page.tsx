@@ -11,7 +11,7 @@ import { Button, Card, ErrorText, Input, Label, PageHeader } from "@/components/
 import { QrShare } from "@/components/panel/qr-share";
 import { planLabels } from "@/lib/labels";
 import { ROOT_DOMAIN, menuHost } from "@/lib/site";
-import type { Business, MenuEvent } from "@/lib/types";
+import type { Business, MenuEvent, Plan, PlanRecord } from "@/lib/types";
 
 function Onboarding() {
   const { user } = useAuth();
@@ -42,12 +42,23 @@ function Onboarding() {
 
     setLoading(true);
     try {
-      const business = await pb.collection("businesses").create<Business>({
+      // Varsayılan kayıt paketi admin panelinden değiştirilebilir (plans.is_default) —
+      // burada sabit bir plan anahtarı gömmek yerine canlı değeri okuyoruz.
+      let defaultPlan: Plan = "freemium";
+      try {
+        const plan = await pb.collection("menuva_plans").getFirstListItem<PlanRecord>("is_default = true");
+        defaultPlan = plan.key;
+      } catch {
+        // plans koleksiyonu boşsa (ör. migrate-plans.mjs henüz çalıştırılmadıysa) sessizce
+        // "freemium"a düşer — kayıt akışını bu yüzden kilitlemiyoruz.
+      }
+
+      const business = await pb.collection("menuva_businesses").create<Business>({
         owner: user.id,
         name,
         slug,
         template: "liste",
-        plan: "ucretsiz",
+        plan: defaultPlan,
         is_active: true,
       });
       setBusiness(business);
@@ -159,7 +170,7 @@ function StatsSection({ business }: { business: Business }) {
       .toISOString()
       .replace("T", " ")
       .slice(0, 19);
-    pb.collection("events")
+    pb.collection("menuva_events")
       .getFullList<MenuEvent>({
         filter: pb.filter("business = {:id} && created >= {:from}", { id: business.id, from }),
         requestKey: null,
@@ -237,8 +248,8 @@ function Overview({ business }: { business: Business }) {
     let cancelled = false;
     async function loadCounts() {
       const [categories, products] = await Promise.all([
-        pb.collection("categories").getList(1, 1, { filter: pb.filter("business = {:id}", { id: business.id }) }),
-        pb.collection("products").getList(1, 1, { filter: pb.filter("business = {:id}", { id: business.id }) }),
+        pb.collection("menuva_categories").getList(1, 1, { filter: pb.filter("business = {:id}", { id: business.id }) }),
+        pb.collection("menuva_products").getList(1, 1, { filter: pb.filter("business = {:id}", { id: business.id }) }),
       ]);
       if (!cancelled) {
         setCounts({ categories: categories.totalItems, products: products.totalItems });

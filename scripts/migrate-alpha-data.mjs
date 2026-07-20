@@ -31,7 +31,7 @@ const defaults = {
 };
 
 (async () => {
-  const business = await pb.collection("businesses").getFirstListItem(pb.filter("slug = {:slug}", { slug: SLUG }));
+  const business = await pb.collection("menuva_businesses").getFirstListItem(pb.filter("slug = {:slug}", { slug: SLUG }));
   console.log(`İşletme bulundu: ${business.name} (${business.id})`);
 
   const patch = {};
@@ -46,7 +46,7 @@ const defaults = {
     return;
   }
 
-  await pb.collection("businesses").update(business.id, patch);
+  await pb.collection("menuva_businesses").update(business.id, patch);
   console.log("Doldurulan alanlar:", Object.keys(patch).join(", "));
 })().catch((err) => {
   console.error("Hata:", err?.response ?? err);

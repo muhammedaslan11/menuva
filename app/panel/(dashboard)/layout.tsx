@@ -7,12 +7,14 @@ import { Logo } from "@/components/chrome";
 import { useAuth } from "@/lib/use-auth";
 import { pb } from "@/lib/pocketbase";
 import { BusinessProvider, useBusiness } from "@/components/panel/business-context";
+import { NotificationBell } from "@/components/panel/notification-bell";
 import { ToastProvider } from "@/components/panel/toast";
 import { menuUrl } from "@/lib/site";
 import {
   ExternalLinkIcon,
   FolderIcon,
   LayoutIcon,
+  LifeBuoyIcon,
   LogoutIcon,
   MegaphoneIcon,
   PackageIcon,
@@ -26,6 +28,7 @@ const navItems = [
   { href: "/panel/products", label: "Ürünler", Icon: PackageIcon, prefixes: ["/panel/products", "/panel/product/"] },
   { href: "/panel/popups", label: "Kampanyalar", Icon: MegaphoneIcon, prefixes: ["/panel/popups", "/panel/popup/"] },
   { href: "/panel/reviews", label: "Değerlendirmeler", Icon: StarIcon, prefixes: ["/panel/reviews"] },
+  { href: "/panel/support", label: "Destek", Icon: LifeBuoyIcon, prefixes: ["/panel/support"] },
   { href: "/panel/settings", label: "Ayarlar", Icon: SettingsIcon, prefixes: ["/panel/settings"] },
 ];
 
@@ -67,6 +70,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
                 <span className="hidden sm:inline">Menüyü gör</span>
               </a>
             )}
+            <NotificationBell />
             <button
               onClick={handleLogout}
               className="inline-flex items-center gap-2 rounded-full border border-line px-3.5 py-2 font-mono text-[12px] uppercase tracking-wider text-ink transition-colors hover:border-paprika hover:text-paprika"

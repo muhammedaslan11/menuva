@@ -22,7 +22,7 @@ export default function AnnouncementsPage() {
   async function load() {
     if (!business) return;
     setLoading(true);
-    const list = await pb.collection("popups").getFullList<Popup>({
+    const list = await pb.collection("menuva_popups").getFullList<Popup>({
       filter: pb.filter("business = {:id}", { id: business.id }),
       sort: "-created",
     });
@@ -32,7 +32,7 @@ export default function AnnouncementsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Bu duyuruyu silmek istediğine emin misin?")) return;
-    await pb.collection("popups").delete(id);
+    await pb.collection("menuva_popups").delete(id);
     await load();
     toast("Kampanya silindi");
   }

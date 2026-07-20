@@ -1,11 +1,17 @@
 import Link from "next/link";
 import { planWhatsappLink, whatsappLink } from "@/lib/site";
 import { CheckCircleIcon, WhatsappIcon } from "@/components/icons";
+import type { PlanRecord } from "@/lib/types";
 
-type Plan = {
+// Fiyat kartının görsel/davranışsal alanları — admin panelindeki `plans`
+// koleksiyonu (bkz. scripts/setup-pocketbase.mjs) sadece ham veriyi tutar;
+// cta metni/href/vurgu gibi sunum kararları burada türetiliyor.
+type PricingCard = {
+  key: string;
   name: string;
   price: string;
   period: string;
+  secondaryPrice?: string;
   desc: string;
   features: string[];
   cta: string;
@@ -15,58 +21,34 @@ type Plan = {
   badge?: string;
 };
 
-const plans: Plan[] = [
-  {
-    name: "Freemium",
-    price: "0₺",
-    period: "sonsuza kadar",
-    desc: "Denemek ve küçük menüler için",
-    features: ["1 menü", "20 ürüne kadar", "QR kod & özel URL", "Anlık güncellemeler"],
-    cta: "Ücretsiz başla",
-    href: "/panel/register",
-    external: false,
-    highlight: false,
-  },
-  {
-    name: "Premium",
-    price: "—",
-    period: "aylık, yakında",
-    desc: "Satışı büyütmek isteyen mekanlar için",
-    features: [
-      "Sınırsız ürün & kategori",
-      "Rozetler & kampanyalar",
-      "Detaylı analiz paneli",
-      "Kalori & alerjen bilgisi",
-      "Pop-up kampanyalar",
-      "Sipariş sepeti",
-      "Markanıza özel tasarım",
-    ],
-    cta: "Erken erişime katıl",
-    href: planWhatsappLink("Premium"),
-    external: true,
-    highlight: true,
-    badge: "En çok tercih edilen",
-  },
-  {
-    name: "Elite",
-    price: "—",
-    period: "yıllık, yakında",
-    desc: "Zincirler ve çoklu şubeler için",
-    features: [
-      "Premium'daki her şey",
-      "Çoklu şube yönetimi",
-      "Şube kırılımlı raporlar",
-      "Özel alan adı",
-      "Öncelikli destek",
-    ],
-    cta: "Bize yazın",
-    href: planWhatsappLink("Elite"),
-    external: true,
-    highlight: false,
-  },
-];
+function formatTL(amount: number): string {
+  return `${new Intl.NumberFormat("tr-TR").format(amount)}₺`;
+}
 
-function PlanCta({ plan }: { plan: Plan }) {
+function toPricingCard(plan: PlanRecord): PricingCard {
+  const isFree = plan.price_6m === 0 && plan.price_12m === 0;
+
+  return {
+    key: plan.key,
+    name: plan.name,
+    price: isFree ? "0₺" : formatTL(plan.price_6m),
+    period: isFree ? "sonsuza kadar" : "6 aylık",
+    secondaryPrice: !isFree && plan.price_12m > 0 ? `veya ${formatTL(plan.price_12m)} yıllık` : undefined,
+    desc: plan.description,
+    features: plan.features,
+    // Ödeme akışı henüz yok: ücretsiz plan doğrudan kayda gider, ücretli
+    // planlar WhatsApp'a — plan adı mesaja yazılır (bkz. lib/site.ts planWhatsappLink).
+    cta: isFree ? "Ücretsiz başla" : "WhatsApp'tan başvur",
+    href: isFree ? "/panel/register" : planWhatsappLink(plan.name),
+    external: !isFree,
+    // "En çok tercih edilen" vurgusu bilinçli olarak orta katmana (premium) sabit —
+    // paket sayısı/sırası değişse de landing'in tasarım niyeti bu.
+    highlight: plan.key === "premium",
+    badge: plan.key === "premium" ? "En çok tercih edilen" : undefined,
+  };
+}
+
+function PlanCta({ plan }: { plan: PricingCard }) {
   const style = plan.highlight
     ? "bg-paprika text-paper hover:bg-paprika-deep hover:shadow-[0_16px_34px_-12px_rgba(232,73,31,0.9)]"
     : "border border-ink text-ink hover:bg-ink hover:text-paper";
@@ -91,7 +73,60 @@ function PlanCta({ plan }: { plan: Plan }) {
   );
 }
 
-export function Pricing() {
+// PocketBase'e ulaşılamadığı ya da `plans` koleksiyonu henüz seed edilmediği
+// (bkz. scripts/migrate-plans.mjs) nadir durumda landing'in fiyat bölümü boş
+// kalmasın diye son çare statik bir yedek — canlı veri geldiğinde hiç kullanılmaz.
+const FALLBACK_CARDS: PricingCard[] = [
+  {
+    key: "freemium",
+    name: "Freemium",
+    price: "0₺",
+    period: "sonsuza kadar",
+    desc: "Denemek ve küçük menüler için",
+    features: ["1 menü", "30 ürüne kadar", "QR kod & özel URL", "Anlık güncellemeler"],
+    cta: "Ücretsiz başla",
+    href: "/panel/register",
+    external: false,
+    highlight: false,
+  },
+  {
+    key: "premium",
+    name: "Premium",
+    price: formatTL(1499),
+    period: "6 aylık",
+    secondaryPrice: `veya ${formatTL(2699)} yıllık`,
+    desc: "Satışı büyütmek isteyen mekanlar için",
+    features: [
+      "Sınırsız ürün & kategori",
+      "Gelişmiş analizler",
+      "Custom Domain",
+      "menuva markasını kaldırma",
+      "Kampanya oluşturma",
+    ],
+    cta: "WhatsApp'tan başvur",
+    href: planWhatsappLink("Premium"),
+    external: true,
+    highlight: true,
+    badge: "En çok tercih edilen",
+  },
+  {
+    key: "elite",
+    name: "Elite",
+    price: formatTL(2999),
+    period: "6 aylık",
+    secondaryPrice: `veya ${formatTL(5499)} yıllık`,
+    desc: "Zincirler ve çoklu şubeler için",
+    features: ["Premium'daki her şey", "White Label desteği", "API erişimi", "Öncelikli teknik destek"],
+    cta: "WhatsApp'tan başvur",
+    href: planWhatsappLink("Elite"),
+    external: true,
+    highlight: false,
+  },
+];
+
+export function Pricing({ plans }: { plans: PlanRecord[] }) {
+  const cards = plans.length > 0 ? plans.map(toPricingCard) : FALLBACK_CARDS;
+
   return (
     <section id="fiyat" className="mx-auto max-w-6xl px-5 py-24">
       <p className="text-center font-mono text-[13px] uppercase tracking-[0.2em] text-paprika">
@@ -106,9 +141,9 @@ export function Pricing() {
       </p>
 
       <div className="mt-14 grid items-start gap-5 md:grid-cols-3">
-        {plans.map((p, i) => (
+        {cards.map((p, i) => (
           <div
-            key={p.name}
+            key={p.key}
             data-reveal
             style={{ transitionDelay: `${i * 90}ms` }}
             className={`relative flex flex-col rounded-2xl border p-8 transition-all duration-300 hover:-translate-y-1.5 ${
@@ -134,6 +169,9 @@ export function Pricing() {
                 {p.period}
               </span>
             </div>
+            {p.secondaryPrice && (
+              <p className={`mt-1 text-xs ${p.highlight ? "text-paper/50" : "text-ink-soft/80"}`}>{p.secondaryPrice}</p>
+            )}
             <p className={`mt-2 text-sm ${p.highlight ? "text-paper/60" : "text-ink-soft"}`}>
               {p.desc}
             </p>
